@@ -30,19 +30,34 @@ def recApply(d, func, condition=lambda x:True, isMap=lambda x:isinstance(x,colle
     return func(d);
   return d;
 
+def recDecode(d):
+  return recApply(d, lambda x:x.decode('utf-8'), lambda x:isinstance(x, str));
+
+def recEncode(d):
+  return recApply(d, lambda x:x.encode('utf-8'), lambda x:isinstance(x, unicode));
+
 class feature(object):
   def __init__(self, data):
     self.load(data);
   def load(self, data):
     self.__geometry = shape(data['geometry']);
     self.__properties = recApply(data['properties'],lambda x:x.decode('utf-8'),lambda x:isinstance(x,str));
-    self.__others = recApply({k:v for k,v in data.items() if k not in set(('geometry','properties','type'))},lambda x:x.decode('utf-8'),lambda x:isinstance(x,str));
+    self.__attributes = recApply({k:v for k,v in data.items() if k not in set(('geometry','properties','type'))},lambda x:x.decode('utf-8'),lambda x:isinstance(x,str));
     return self;
   def dump(self):
-    return dict({'type':'Feature','geometry':mapping(self.__geometry), 'properties':recApply(self.__properties,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode))},**recApply(self.__others,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode)));
+    return dict({'type':'Feature','geometry':mapping(self.__geometry), 'properties':recApply(self.__properties,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode))},**recApply(self.__attributes,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode)));
   def join(self, d):
     self.__properties = dict(self.__properties,**d);
     return self;
+  @property
+  def properties(self):
+    return self.__properties;
+  @property
+  def geometry(self):
+    return self.__geometry;
+  @property
+  def attributes(self):
+    return self.__attributes;
   def isMatch(self, condition):
     return condition(self.__properties);
 
@@ -65,7 +80,7 @@ class features(object):
 class geoJson(object):
   def __init__(self, data):
     self.__features = None;
-    self.__others = {};
+    self.__attributes = {};
     if isinstance(data, basestring):
       with open(data,'r') as f:
         self.load(json.loads(f.read()));
@@ -74,13 +89,13 @@ class geoJson(object):
     else:
       self.load(data);
   def load(self, data):
-    self.__others = recApply({k:v for k,v in data.items() if k not in set(('type','features'))},lambda x:x.decode('utf-8'),lambda x:isinstance(x,str));
+    self.__attributes = recApply({k:v for k,v in data.items() if k not in set(('type','features'))},lambda x:x.decode('utf-8'),lambda x:isinstance(x,str));
     self.__features = features(data['features']);
     return self;
   def dump(self):
     if self.__features is None:
-      return dict({'type': 'FeaturesCollection','features':[]},**recApply(self.__others,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode)));
-    return dict({'type': 'FeaturesCollection','features':self.__features.dump()},**recApply(self.__others,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode)));
+      return dict({'type': 'FeaturesCollection','features':[]},**recApply(self.__attributes,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode)));
+    return dict({'type': 'FeaturesCollection','features':self.__features.dump()},**recApply(self.__attributes,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode)));
   def __str__(self):
     return json.dumps(self.dump());
   def __iter__(self):

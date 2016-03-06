@@ -2,10 +2,33 @@
 
 import sys;
 
+import collections;
+
 from shapely.geometry import shape, mapping;
 from shapely.ops import cascaded_union;
 import fiona;
-import json
+from fiona.crs import to_string;
+import json;
+
+def recApply(d, func, condition=lambda x:True, isMap=lambda x:isinstance(x,collections.Mapping), isContainer=lambda x:isinstance(x,collections.Iterable) and not isinstance(x, basestring), applyToKey=True):
+  """d に対して func を再帰的に適用する
+
+  :param d: 任意の変数
+  :param func: 適用する関数
+  :param condition: 関数を適用するかどうか判定する関数
+  :param isMap: 辞書系オブジェクトかどうか判定する関数
+  :param isContainer: イテレータブル系かどうか判定する関数
+  :param applyToKey: 辞書系オブジェクトのキーにも関数を適用するかどうかの真偽値
+  """
+  if isMap(d):
+    if applyToKey:
+      return d.__class__( ( (recApply(k,func,condition,isMap,isContainer,applyToKey),recApply(v,func,condition,isMap,isContainer,applyToKey)) for k,v in d.items() ) );
+    return d.__class__( ( (k,recApply(v,func,condition,isMap,isContainer,applyToKey)) for k,v in d.items() ) );
+  if isContainer(d):
+    return d.__class__( ( recApply(v,func,condition,isMap,isContainer,applyToKey) for v in d ) );
+  if condition(d):
+    return func(d);
+  return d;
 
 class shapeAggregator(object):
   def __init__(self):
@@ -63,14 +86,14 @@ def mainFunc(shpAggr):
   with fiona.drivers():
     for fn in args.files:
       with fiona.open(fn) as source:
-        crs = " ".join("+%s=%s" % (k,v) for k,v in source.crs.items())
+        crs = to_string(source.crs);
         for s in source:
           shpAggr.add(s);
     if args.out is None:
-      sys.stdout.write(json.dumps({'type': 'FeatureCollection','features': shpAggr.aggregate(),'crs': crs}));
+      sys.stdout.write(json.dumps({'type': 'FeatureCollection','features': recApply(shpAggr.aggregate(),lambda x:x.encode('utf-8'),condition=lambda x:isinstance(x,unicode)),'crs': crs}, ensure_ascii=False));
     else:
       with open(args.out, 'w') as o:
-        o.write(json.dumps({'type': 'FeatureCollection','features': shpAggr.aggregate(),'crs': crs}));
+        o.write(json.dumps({'type': 'FeatureCollection','features': recApply(shpAggr.aggregate(),lambda x:x.encode('utf-8'),condition=lambda x:isinstance(x,unicode)),'crs': crs}, ensure_ascii=False));
 
 
 if __name__ == '__main__':

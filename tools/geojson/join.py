@@ -14,7 +14,7 @@ import StringIO;
 def mainFunc():
   import argparse
 
-  parser = argparse.ArgumentParser(description='filter geojson by property.');
+  parser = argparse.ArgumentParser(description='join data with geojson.');
   parser.add_argument('-i', '--input', action='store', dest='i', help='input file name (default: stdin)');
   parser.add_argument('-d', '--delimiter', action='store', dest='delim', help='delimitor for key string', default=',');
   parser.add_argument('key', action='store', help='key file name or raw string which represents join keys.');

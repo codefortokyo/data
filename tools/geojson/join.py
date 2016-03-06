@@ -6,12 +6,14 @@ import collections;
 import json;
 import warnings
 
+import manip;
+
 def mainFunc():
   import argparse
 
   parser = argparse.ArgumentParser(description='filter geojson by property.');
   parser.add_argument('-i', '--input', action='store', dest='i', help='input file name (default: stdin)');
-  parser.add_argument('key', action='store', help='key to join');
+  parser.add_argument('key', action='store', help='key file name or raw string which represents the join key.');
   parser.add_argument('dictionary', action='append', nargs='+', help='dictionary file (json) name or python dictionary object');
   parser.add_argument('-o', '--output', action='store', dest='o', help='output file name (default: stdout)');
 
@@ -36,6 +38,7 @@ def mainFunc():
       geojson = json.loads(f.read());
   else:
     geojson = json.loads(sys.stdin.read());
+
   for f in geojson['features']:
     if args.key in f['properties']:
       if f['properties'][args.key] in joinDict:

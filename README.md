@@ -76,13 +76,13 @@ $ join.py [-h] [-i I] [-d DELIM] [-o O] key dictionary
 ```
 
 #### positional arguments:
-  `key`                   key file name or raw string which represents join
+-  `key`                   key file name or raw string which represents join
                         keys.
-  `dictionary`            dictionary file (json,csv or tsv) name
+-  `dictionary`            dictionary file (json,csv or tsv) name
 
 #### optional arguments:
-  `-h`, `--help`            show this help message and exit
-  `-i` I, `--input` I       input file name (default: stdin)
-  `-d` DELIM, `--delimiter` DELIM
+-  `-h`, `--help`            show this help message and exit
+-  `-i` I, `--input` I       input file name (default: stdin)
+-  `-d` DELIM, `--delimiter` DELIM
                         delimitor for key string
-  `-o` O, `--output` O      output file name (default: stdout)
+-  `-o` O, `--output` O      output file name (default: stdout)

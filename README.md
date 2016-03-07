@@ -1,7 +1,7 @@
 # Code for Tokyo Data Processing Tools
 
 ---
-## `tools/shp2geojson/shp2geojson.py`
+## `tools/shapefile/shp2geojson.py`
 
 shape files to geojson.
 
@@ -25,7 +25,7 @@ $ python shp2geojson.py [-h] [-o OUT] files [files ...]
 - Shapely==1.5.12
 
 ---
-## `tools/shp2geojson/mlit.py`
+## `tools/shapefile/mlit.py`
 
 `shp2geojson` の国土数値情報向け設定
 

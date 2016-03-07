@@ -14,7 +14,7 @@ import StringIO;
 def mainFunc():
   import argparse
 
-  parser = argparse.ArgumentParser(description='join data with geojson.');
+  parser = argparse.ArgumentParser(description='extract properties from the input geojson and dump  into csv.');
   parser.add_argument('-i', '--input', action='store', dest='i', help='input file name (default: stdin)');
   parser.add_argument('-d', '--delimiter', action='store', dest='d', help='delimiter (default: ,)', default=',');
   parser.add_argument('-o', '--output', action='store', dest='o', help='output file name (default: stdout)');

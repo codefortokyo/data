@@ -86,3 +86,18 @@ $ join.py [-h] [-i I] [-d DELIM] [-o O] key dictionary
 -  `-d` DELIM, `--delimiter` DELIM
                         delimitor for key string
 -  `-o` O, `--output` O      output file name (default: stdout)
+
+## `tools/geojson/prop2csv.py`
+
+extract properties from the input geojson and dump into csv.
+
+#### usage
+```
+$ prop2csv.py [-h] [-i I] [-d D] [-o O]
+```
+
+#### optional arguments:
+-  `-h`, `--help`           show this help message and exit
+-  `-i` I, `--input` I      input file name (default: stdin)
+-  `-d` D, `--delimiter` D  delimiter (default: ,)
+-  `-o` O, `--output` O     output file name (default: stdout)

@@ -1,4 +1,4 @@
-## `tools/geojson/filter.py`
+## `filter.py`
 
 filter geojson by property.
 
@@ -16,7 +16,7 @@ $ python filter.py [-h] [-i I] [-o O] filters [filters ...]
 -  `-i` I, `--input` I   input file name (default: stdin)
 -  `-o` O, `--output` O  output file name (default: stdout)
 
-## `tools/geojson/join.py`
+## `join.py`
 join data with geojson.
 
 ### usage
@@ -36,7 +36,7 @@ $ join.py [-h] [-i I] [-d DELIM] [-o O] key dictionary
                         delimitor for key string
 -  `-o` O, `--output` O      output file name (default: stdout)
 
-## `tools/geojson/prop2csv.py`
+## `prop2csv.py`
 
 extract properties from the input geojson and dump into csv.
 

@@ -4,6 +4,31 @@ import sys;
 import os;
 import collections;
 
+from datetime import datetime;
+import time;
+import re;
+
+import shortuuid;
+
+shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+
+def _print(x):
+  """print 文の関数版。
+  :param x: 任意のオブジェクト
+  """
+  print x;
+
+def _raise(x):
+  """raise 文の関数版。この関数の中から x　をraise する
+  :param x: 任意のオブジェクト
+  """
+  raise x;
+
+def genId():
+  """22文字のUUIDを生成する
+  """
+  return shortuuid.uuid();
+
 def const(x):
   """常にxを返す関数を返す
   :param x: 任意のオブジェクト
@@ -40,17 +65,23 @@ def isWritable(x):
   """
   return hasattr(x, 'write') and hasattr(x.write, '__call__');
 
-def _print(x):
-  """print 文の関数版。
-  :param x: 任意のオブジェクト
+def dt2Ts(dt):
+  """datetime型をtimestampに変換する
+  :param dt: datetime型
   """
-  print x;
+  return int(time.mktime(dt.timetuple())*1000)+(dt.microsecond/1000);
 
-def _raise(x):
-  """raise 文の関数版。この関数の中から x　をraise する
-  :param x: 任意のオブジェクト
+def ts2Dt(ts):
+  """整数で表されたtimestampをdatetime型に変換する
+  :param ts: 整数
   """
-  raise x;
+  return datetime.fromtimestamp( int(ts)/1000 ).replace(microsecond=int(ts)%1000*1000);
+
+def isURL(x):
+  """xがURLのパターンにマッチすればTrue、そうでなければFalseを返す
+  :param x: basestring
+  """
+  return re.match(r'https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', x) is not None;
 
 def rApply(f, x, condition=const(True), isMapping=isMapping, isIterable=isIterable, applyToKey=True, defaultMapping=dict, defaultSequence=list):
   """xに対して再帰的にfを適用する。conditionで適用するかどうかの判定ができる。
@@ -65,19 +96,43 @@ def rApply(f, x, condition=const(True), isMapping=isMapping, isIterable=isIterab
   """
   if isMapping(x):
     if applyToKey:
+      res = ( (rApply(f,k,condition,isMapping,isIterable,applyToKey),rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() );
       try:
-        return x.__class__( ( (rApply(f,k,condition,isMapping,isIterable,applyToKey),rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
+        return x.__class__( res );
       except:
-        return defaultMapping( ( (rApply(f,k,condition,isMapping,isIterable,applyToKey),rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
+        return defaultMapping( res );
     try:
-      return x.__class__( ( (k,rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
+      res = ( (k,rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() );
+      return x.__class__( res );
     except:
-      return defaultMapping( ( (k,rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
+      return defaultMapping( res );
   if isIterable(x):
+    res = ( rApply(f,v,condition,isMapping,isIterable,applyToKey) for v in x );
     try:
-      return x.__class__( ( rApply(f,v,condition,isMapping,isIterable,applyToKey) for v in x ) );
+      return x.__class__( res );
     except:
-      return defaultSequence( (rApply(f,v,condition,isMapping,isIterable,applyToKey) for v in x ) );
+      return defaultSequence( res );
   if condition(x):
     return f(x);
   return x;
+
+def rDecode(x, encoding='utf-8'):
+  """xに対して再帰的にx.decode(encoding)を掛ける
+  :param x: 任意のオブジェクト
+  :param encoding: エンコーディング。デフォルトはutf-8
+  """
+  return rApply(lambda y:y.decode(encoding), x, condition=lambda y:isinstance(y,str));
+
+def rEncode(x, encoding='utf-8'):
+  """xに対して再帰的にx.encode(encoding)を掛ける
+  :param x: 任意のオブジェクト
+  :param encoding: エンコーディング。デフォルトはutf-8
+  """
+  return rApply(lambda y:y.encode(encoding), x, condition=lambda y:isinstance(y,unicode));
+
+def rDt2Str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
+  """xに対して再帰的にx.strftime(timeFormat)を掛ける
+  :param x: 任意のオブジェクト
+  :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
+  """
+  return rApply(lambda y:y.strftime(timeFormat), x, condition=lambda y:isinstance(y,datetime));

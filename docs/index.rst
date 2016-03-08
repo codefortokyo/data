@@ -1,16 +1,17 @@
-.. Code for Tokyo Data Processing Tool documentation master file, created by
-   sphinx-quickstart on Tue Mar 08 01:14:47 2016.
+.. cftt documentation master file, created by
+   sphinx-quickstart on Wed Mar 09 00:22:37 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Code for Tokyo Data Processing Tool's documentation!
-===============================================================
+Welcome to cftt's documentation!
+================================
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
+   cftt
 
 
 Indices and tables

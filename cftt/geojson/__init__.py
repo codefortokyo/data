@@ -3,7 +3,7 @@
 import sys;
 import os;
 
-sys.path.insert(0, os.path.dirname(__file__));
+sys.path.insert(0, os.path.join(os.path.dirname(__file__),'..'));
 
 import util;
 
@@ -40,6 +40,7 @@ class feature(object):
       self.__attributes = d.__attributes;
       self.__properties = d.__properties;
     else:
+      pass;
 
 
 class geoJson(object):
@@ -60,3 +61,4 @@ class geoJson(object):
     d に辞書型オブジェクトを渡すと、それをgeojsonだと解釈して読み込みを試みる。'features'属性が必要。
     """
     if isinstance(d, collections.Mapping):
+      pass;

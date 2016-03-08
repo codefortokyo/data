@@ -45,7 +45,13 @@ def recEncode(d):
   return recApply(d, lambda x:x.encode('utf-8'), lambda x:isinstance(x, unicode));
 
 class feature(object):
+  """単一の feature を扱うためのクラス
+  """
   def __init__(self, data):
+    """feature を構成する
+
+    :param data: 'geometry' と 'properties' を要素に持ったオブジェクト
+    """
     self.load(data);
   def load(self, data):
     self.__geometry = shape(data['geometry']);

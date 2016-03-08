@@ -31,9 +31,17 @@ def recApply(d, func, condition=lambda x:True, isMap=lambda x:isinstance(x,colle
   return d;
 
 def recDecode(d):
+  """d と同じ構造で、 d の全ての str 要素に対して .decode('utf-8') を掛けたものを返す
+
+  :param d: 任意の変数
+  """
   return recApply(d, lambda x:x.decode('utf-8'), lambda x:isinstance(x, str));
 
 def recEncode(d):
+  """d と同じ構造で、 d の全ての unicode 要素に対して .encode('utf-8') を掛けたものを返す
+
+  :param d: 任意の変数
+  """
   return recApply(d, lambda x:x.encode('utf-8'), lambda x:isinstance(x, unicode));
 
 class feature(object):

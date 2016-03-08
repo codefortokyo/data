@@ -144,6 +144,19 @@ def rEncode(x, encoding='utf-8'):
   """
   return rApply(lambda y:y.encode(encoding), x, condition=lambda y:isinstance(y,unicode));
 
+def rStr2Dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
+  """xに対して再帰的にdatetime.strptime(x, timeFormat)を掛ける
+
+  :param x: 任意のオブジェクト
+  :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
+  """
+  def f(y):
+    try:
+      return datetime.strptime(y, timeFormat);
+    except:
+      return y;
+  return rApply(f, x, condition=lambda y: isinstance(y, basestring));
+
 def rDt2Str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
   """xに対して再帰的にx.strftime(timeFormat)を掛ける
 

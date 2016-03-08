@@ -9,6 +9,18 @@ Subpackages
     cftt.geojson
     cftt.shapefile
 
+Submodules
+----------
+
+cftt.util module
+----------------
+
+.. automodule:: cftt.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Module contents
 ---------------
 

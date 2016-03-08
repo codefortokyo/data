@@ -95,25 +95,9 @@ class feature(object):
     """
     return condition(self.__properties);
 
-class features(object):
-  def __init__(self, data):
-    self.__data = None;
-    self.load(data);
-  def load(self, data):
-    self.__data = [ feature(d) for d in data ];
-    return self;
-  def dump(self):
-    if self.__data is None:
-      return [];
-    return [f.dump() for f in self.__data]
-  def __iter__(self):
-    if self.__data is None:
-      raise StopIteration;
-    return self.__data.__iter__();
-
 class geoJson(object):
   def __init__(self, data):
-    self.__features = None;
+    self.__features = [];
     self.__attributes = {};
     if isinstance(data, basestring):
       with open(data,'r') as f:

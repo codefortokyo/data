@@ -52,7 +52,7 @@ def _raise(x):
   """
   raise x;
 
-def rApply(f, x, condition=const(True), isMapping=isMapping, isIterable=isIterable, applyToKey=True):
+def rApply(f, x, condition=const(True), isMapping=isMapping, isIterable=isIterable, applyToKey=True, defaultMapping=dict, defaultSequence=list):
   """xに対して再帰的にfを適用する。conditionで適用するかどうかの判定ができる。
   :param f: 一つの引数を取る関数
   :param x: 任意のオブジェクト
@@ -60,22 +60,24 @@ def rApply(f, x, condition=const(True), isMapping=isMapping, isIterable=isIterab
   :param isMapping: 辞書系オブジェクトかどうか判定する関数
   :param isIterable:　イテレータオブジェクトかどうか判定する
   :param applyToKey: 辞書系オブジェクトのkeyにも関数を適用するかどうかの真偽値
+  :param defaultMapping: 辞書系オブジェクトを構築する際に、元の型が維持できなかった場合に用いられる辞書系オブジェクトのコンストラクタ
+  :param defaultSequence: リスト系オブジェクトを構築する際に、元の型が維持できなかった場合に用いられるリストオブジェクトのコンストラクタ
   """
   if isMapping(x):
     if applyToKey:
       try:
         return x.__class__( ( (rApply(f,k,condition,isMapping,isIterable,applyToKey),rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
       except:
-        return dict( ( (rApply(f,k,condition,isMapping,isIterable,applyToKey),rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
+        return defaultMapping( ( (rApply(f,k,condition,isMapping,isIterable,applyToKey),rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
     try:
       return x.__class__( ( (k,rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
     except:
-      return dict( ( (k,rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
+      return defaultMapping( ( (k,rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() ) );
   if isIterable(x):
     try:
       return x.__class__( ( rApply(f,v,condition,isMapping,isIterable,applyToKey) for v in x ) );
     except:
-      return [ rApply(f,v,condition,isMapping,isIterable,applyToKey) for v in x ];
+      return defaultSequence( (rApply(f,v,condition,isMapping,isIterable,applyToKey) for v in x ) );
   if condition(x):
     return f(x);
   return x;

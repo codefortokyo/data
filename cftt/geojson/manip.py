@@ -31,55 +31,73 @@ def recApply(d, func, condition=lambda x:True, isMap=lambda x:isinstance(x,colle
   return d;
 
 def recDecode(d):
+  """d と同じ構造で、 d の全ての str 要素に対して .decode('utf-8') を掛けたものを返す
+
+  :param d: 任意の変数
+  """
   return recApply(d, lambda x:x.decode('utf-8'), lambda x:isinstance(x, str));
 
 def recEncode(d):
+  """d と同じ構造で、 d の全ての unicode 要素に対して .encode('utf-8') を掛けたものを返す
+
+  :param d: 任意の変数
+  """
   return recApply(d, lambda x:x.encode('utf-8'), lambda x:isinstance(x, unicode));
 
 class feature(object):
+  """単一の feature を扱うためのクラス
+  """
   def __init__(self, data):
+    """feature を構成する
+
+    :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
+    """
     self.load(data);
   def load(self, data):
+    """data を元に feature を構成する
+
+    :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
+    """
     self.__geometry = shape(data['geometry']);
     self.__properties = recApply(data['properties'],lambda x:x.decode('utf-8'),lambda x:isinstance(x,str));
     self.__attributes = recApply({k:v for k,v in data.items() if k not in set(('geometry','properties','type'))},lambda x:x.decode('utf-8'),lambda x:isinstance(x,str));
     return self;
   def dump(self):
+    """このインスタンスを表す、json.dumpsなどでダンプ可能なオブジェクトを返す
+    """
     return dict({'type':'Feature','geometry':mapping(self.__geometry), 'properties':recApply(self.__properties,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode))},**recApply(self.__attributes,lambda x:x.encode('utf-8'),lambda x:isinstance(x,unicode)));
   def join(self, d):
+    """d のキーヴァリューの組をこのインスタンスの properties に追加する
+
+    :param d: Mapping オブジェクト
+    """
     self.__properties = dict(self.__properties,**d);
     return self;
   @property
   def properties(self):
+    """このインスタンスの properties オブジェクト自体を返す
+    """
     return self.__properties;
   @property
   def geometry(self):
+    """このインスタンスの geometry オブジェクト自体を返す
+    """
     return self.__geometry;
   @property
   def attributes(self):
+    """このインスタンスのその他の属性の Mapping オブジェクトを返す
+    """
     return self.__attributes;
   def isMatch(self, condition):
-    return condition(self.__properties);
+    """このインスタンスの properties が condition に一致しているかどうか返す
 
-class features(object):
-  def __init__(self, data):
-    self.__data = None;
-    self.load(data);
-  def load(self, data):
-    self.__data = [ feature(d) for d in data ];
-    return self;
-  def dump(self):
-    if self.__data is None:
-      return [];
-    return [f.dump() for f in self.__data]
-  def __iter__(self):
-    if self.__data is None:
-      raise StopIteration;
-    return self.__data.__iter__();
+    :param condition: 一つの引数（propertiesが渡される）を取る関数
+    """
+    return condition(self.__properties);
 
 class geoJson(object):
   def __init__(self, data):
-    self.__features = None;
+    self.__features = [];
     self.__attributes = {};
     if isinstance(data, basestring):
       with open(data,'r') as f:

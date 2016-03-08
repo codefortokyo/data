@@ -1,2 +1,3 @@
-Fiona==1.6.2
-Shapely==1.5.12
+Fiona>=1.6.2
+Shapely>=1.5.12
+shortuuid>=0.4.3

@@ -87,6 +87,42 @@ class feature(object):
       return self;
     self.__properties[k] = v;
     return self;
+  def attr(self, *x):
+    """attributes を set/get する。
+
+    :param x:
+    """
+    if len(x)==0:
+      return self;
+    if len(x)==1:
+      if util.isMapping(x[0]):
+        for k,v in util.rDecode(x[0]):
+          self.attr(k, v);
+        return self;
+      if isinstance(x[0], collections.Set):
+        return { k: self.attr(k) for k in util.rDecode(x[0]) };
+      if util.isIterable(x[0]):
+        res = tuple( self.attr(k) for k in util.rDecode(x[0]) );
+        try:
+          return x[0].__class__(res);
+        except:
+          return res;
+      k=util.safeDecode(x[0]);
+      if not util.isString(x[0]):
+        k = util.safeDecode(str(x[0]));
+      if k in self.__attributes:
+        return self.__attributes[k];
+      return None;
+    k=util.safeDecode(x[0]);
+    if not util.isString(x[0]):
+      k = util.safeDecode(str(x[0]));
+    v=util.safeDecode(x[1]);
+    if v is None:
+      if k in self.__attributes:
+        del self.__attributes[k];
+      return self;
+    self.__attributes[k] = v;
+    return self;
 
   def isMatch(self, condition):
     """このインスタンスの properties が condition に一致しているかどうか返す

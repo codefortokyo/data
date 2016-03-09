@@ -73,6 +73,55 @@ def isWritable(x):
   """
   return hasattr(x, 'write') and hasattr(x.write, '__call__');
 
+def safeEncode(x, encoding='utf-8'):
+  """xがunicode文字列だった場合utf-8にエンコードして返す。それ以外はそのまま返す。
+
+  :param x: 任意のオブジェクト
+  """
+  if isinstance(x, unicode):
+    return x.encode(encoding);
+  return x;
+
+def safeDecode(x, encoding='utf-8'):
+  """xがstr文字列だった場合unicodeにデコードして返す。それ以外はそのまま返す。
+
+  :param x: 任意のオブジェクト
+  """
+  if isinstance(x, str):
+    return x.decode(encoding);
+  return x;
+
+def reconstructSequence(f, x, defaultSequence=list):
+  """xの中身にfを掛けて、xと同じ型で再構築する。再構築に失敗した場合defaultSequence型で再構成する。
+
+  :param f: 引数を一つ取る関数
+  :param x: 任意のイテラブル
+  :param defaultSequence: イテラブルのコンストラクタ
+  """
+  res = tuple( f(y) for y in x );
+  try:
+    return x.__class__(res);
+  except:
+    return defaultSequence(res);
+
+def reconstructMapping(f, x, defaultMapping=dict, applyToKey=True):
+  """xの中身にfを掛けて、xと同じ型で再構築する。再構築に失敗した場合defaultMapping型で再構成する。
+
+  :param f: 引数を一つ取る関数
+  :param x: 任意のイテラブル
+  :param defaultMapping: イテラブルのコンストラクタ
+  :param applyToKey: キーにもfを適用するかの真偽値
+  """
+  if applyToKey:
+    res = tuple( (f(k),f(v)) for k,v in x.items() );
+  else:
+    res = tuple( (k,f(v)) for k,v in x.items() );
+  try:
+    return x.__class__(res);
+  except:
+    return defaultMapping(res);
+
+
 def dt2Ts(dt):
   """datetime型をtimestampに変換する
 
@@ -106,24 +155,11 @@ def rApply(f, x, condition=const(True), isMapping=isMapping, isIterable=isIterab
   :param defaultMapping: 辞書系オブジェクトを構築する際に、元の型が維持できなかった場合に用いられる辞書系オブジェクトのコンストラクタ
   :param defaultSequence: リスト系オブジェクトを構築する際に、元の型が維持できなかった場合に用いられるリストオブジェクトのコンストラクタ
   """
+  g = lambda y: rApply(f, y, condition, isMapping, isIterable, applyToKey, defaultMapping, defaultSequence);
   if isMapping(x):
-    if applyToKey:
-      res = ( (rApply(f,k,condition,isMapping,isIterable,applyToKey),rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() );
-      try:
-        return x.__class__( res );
-      except:
-        return defaultMapping( res );
-    try:
-      res = ( (k,rApply(f,v,condition,isMapping,isIterable,applyToKey)) for k,v in x.items() );
-      return x.__class__( res );
-    except:
-      return defaultMapping( res );
+    return reconstructMapping(g, x, defaultMapping, applyToKey);
   if isIterable(x):
-    res = ( rApply(f,v,condition,isMapping,isIterable,applyToKey) for v in x );
-    try:
-      return x.__class__( res );
-    except:
-      return defaultSequence( res );
+    return reconstructSequence(g, x, defaultSequence);
   if condition(x):
     return f(x);
   return x;

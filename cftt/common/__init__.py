@@ -53,6 +53,8 @@ class feature(object):
     return self.__attributes;
   def property(self, *x):
     """properties を set/get する。
+    property('id') id 属性の値を取得する
+    property('id', 'a123') id 属性の値を a123 に設定する
 
     :param x:
     """
@@ -89,6 +91,8 @@ class feature(object):
     return self;
   def attr(self, *x):
     """attributes を set/get する。
+    attr('id') id 属性の値を取得する
+    attr('id', 'a123') id 属性の値を a123 に設定する
 
     :param x:
     """

@@ -28,9 +28,9 @@ class Feature(object):
 
         :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
         """
-        self.__geometry = shape(data['geometry'])
-        self.__properties = util.rDecode(data['properties'])
-        self.__attributes = util.rDecode({
+        self._geometry = shape(data['geometry'])
+        self._properties = util.rDecode(data['properties'])
+        self._attributes = util.rDecode({
             k: v for k, v in data.items()
             if k not in set(('geometry', 'properties', 'type'))
         })
@@ -40,14 +40,14 @@ class Feature(object):
         """このインスタンスを表す、json.dumpsなどでダンプ可能なオブジェクトを返す
         """
         return dict({u'type': u'Feature',
-                     u'geometry': util.rDecode(mapping(self.__geometry)),
-                     u'properties': self.__properties}, **self.__attributes)
+                     u'geometry': util.rDecode(mapping(self._geometry)),
+                     u'properties': self._properties}, **self._attributes)
 
     @property
     def properties(self):
         """このインスタンスの properties オブジェクト自体を返す
         """
-        return self.__properties
+        return self._properties
 
     @properties.setter
     def properties(self, x):
@@ -57,14 +57,14 @@ class Feature(object):
         """
         if not util.isMapping(x):
             raise Exception('properties must be an instance of Mapping')
-        self.__properties = rDecode(x)
+        self._properties = rDecode(x)
         return self
 
     @property
     def geometry(self):
         """このインスタンスの geometry オブジェクト自体を返す
         """
-        return self.__geometry
+        return self._geometry
 
     @geometry.setter
     def geometry(self, x):
@@ -73,9 +73,9 @@ class Feature(object):
         :param x: shape か shape に変換可能な Mapping オブジェクト
         """
         if isinstance(x, shape):
-            self.__geometry = x
+            self._geometry = x
         elif util.isMapping(x):
-            self.__geometry = shape(x)
+            self._geometry = shape(x)
         else:
             raise Exception('geometry must be an instance of shape')
         return self
@@ -84,7 +84,7 @@ class Feature(object):
     def attributes(self):
         """このインスタンスのその他の属性の Mapping オブジェクトを返す
         """
-        return self.__attributes
+        return self._attributes
 
     @attributes.setter
     def attributes(self, x):
@@ -94,7 +94,7 @@ class Feature(object):
         """
         if not util.isMapping(x):
             raise Exception('attributes must be an instance of Mapping')
-        self.__attributes = rDecode(x)
+        self._attributes = rDecode(x)
         return self
 
     def property(self, *x):
@@ -116,24 +116,24 @@ class Feature(object):
             if util.isIterable(x[0]):
                 res = tuple(self.property(k) for k in util.rDecode(x[0]))
                 try:
-                    return x[0].__class__(res)
+                    return x[0]._class_(res)
                 except:
                     return res
             k = util.safeDecode(x[0])
             if not util.isString(x[0]):
                 k = unicode(x[0])
-            if k in self.__properties:
-                return self.__properties[k]
+            if k in self._properties:
+                return self._properties[k]
             return None
         k = util.safeDecode(x[0])
         if not util.isString(x[0]):
             k = unicode(x[0])
         v = util.safeDecode(x[1])
         if v is None:
-            if k in self.__properties:
-                del self.__properties[k]
+            if k in self._properties:
+                del self._properties[k]
             return self
-        self.__properties[k] = v
+        self._properties[k] = v
         return self
 
     def attr(self, *x):
@@ -155,24 +155,24 @@ class Feature(object):
             if util.isIterable(x[0]):
                 res = tuple(self.attr(k) for k in util.rDecode(x[0]))
                 try:
-                    return x[0].__class__(res)
+                    return x[0]._class_(res)
                 except:
                     return res
             k = util.safeDecode(x[0])
             if not util.isString(x[0]):
                 k = unicode(x[0])
-            if k in self.__attributes:
-                return self.__attributes[k]
+            if k in self._attributes:
+                return self._attributes[k]
             return None
         k = util.safeDecode(x[0])
         if not util.isString(x[0]):
             k = unicode(x[0])
         v = util.safeDecode(x[1])
         if v is None:
-            if k in self.__attributes:
-                del self.__attributes[k]
+            if k in self._attributes:
+                del self._attributes[k]
             return self
-        self.__attributes[k] = v
+        self._attributes[k] = v
         return self
 
     def isMatch(self, condition):
@@ -180,12 +180,12 @@ class Feature(object):
 
         :param condition: 一つの引数（propertiesが渡される）を取る関数
         """
-        return condition(self.__properties)
+        return condition(self._properties)
 
     def join(self, d):
         """d のキーヴァリューの組をこのインスタンスの properties に追加する
 
         :param d: Mapping オブジェクト
         """
-        self.__properties = dict(self.__properties, **d)
+        self._properties = dict(self._properties, **d)
         return self

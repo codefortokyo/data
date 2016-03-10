@@ -1,6 +1,6 @@
 .PHONY: clean-pyc docs
 
-all: clean-pyc test
+all: clean-pyc docs
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +

@@ -28,7 +28,10 @@ class Feature(object):
 
         :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
         """
-        self._geometry = shape(data['geometry'])
+        if isinstance(data['geometry'], shape):
+            self._geometry = data['geometry']
+        else:
+            self._geometry = shape(data['geometry'])
         self._properties = util.rec_decode(data['properties'])
         self._attributes = util.rec_decode({
             k: v for k, v in data.items()

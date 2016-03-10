@@ -12,6 +12,14 @@ cftt.shapefile.mlit module
     :undoc-members:
     :show-inheritance:
 
+cftt.shapefile.shapefile module
+-------------------------------
+
+.. automodule:: cftt.shapefile.shapefile
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cftt.shapefile.shp2geojson module
 ---------------------------------
 

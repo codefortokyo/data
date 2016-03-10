@@ -106,7 +106,7 @@ def safe_decode(x, encoding='utf-8'):
     return x
 
 
-def reconstruct_sequence(f, x, defaultSequence=list):
+def reconstruct_sequence(f, x, default_sequence=list):
     """xの中身にfを掛けて、xと同じ型で再構築する。再構築に失敗した場合defaultSequence型で再構成する。
 
     :param f: 引数を一つ取る関数
@@ -117,10 +117,10 @@ def reconstruct_sequence(f, x, defaultSequence=list):
     try:
         return x.__class__(res)
     except:
-        return defaultSequence(res)
+        return default_sequence(res)
 
 
-def reconstruct_mapping(f, x, defaultMapping=dict, applyToKey=True):
+def reconstruct_mapping(f, x, default_mapping=dict, apply_to_key=True):
     """xの中身にfを掛けて、xと同じ型で再構築する。再構築に失敗した場合defaultMapping型で再構成する。
 
     :param f: 引数を一つ取る関数
@@ -128,14 +128,14 @@ def reconstruct_mapping(f, x, defaultMapping=dict, applyToKey=True):
     :param defaultMapping: イテラブルのコンストラクタ
     :param applyToKey: キーにもfを適用するかの真偽値
     """
-    if applyToKey:
+    if apply_to_key:
         res = tuple((f(k), f(v)) for k, v in x.items())
     else:
         res = tuple((k, f(v)) for k, v in x.items())
     try:
         return x.__class__(res)
     except:
-        return defaultMapping(res)
+        return default_mapping(res)
 
 
 def dt2ts(dt):
@@ -175,17 +175,17 @@ def rec_apply(f, x, condition=const(True), is_mapping=is_mapping,
     :param isIterable: イテレータオブジェクトかどうか判定する
     :param applyToKey: 辞書系オブジェクトのkeyにも関数を適用するかどうかの真偽値
     :param defaultMapping: 辞書系オブジェクトを構築する際に、元の型が維持できなかった場合に
-    用いられる辞書系オブジェクトのコンストラクタ
+        用いられる辞書系オブジェクトのコンストラクタ
     :param defaultSequence: リスト系オブジェクトを構築する際に、元の型が維持できなかった場合に
-    用いられるリストオブジェクトのコンストラクタ
+        用いられるリストオブジェクトのコンストラクタ
     """
     def g(y):
-        if is_mapping(x):
-            return reconstruct_mapping(g, x, default_mapping, apply_to_key)
-        if is_iterable(x):
-            return reconstruct_sequence(g, x, default_sequence)
-        if condition(x):
-            return f(x)
+        if is_mapping(y):
+            return reconstruct_mapping(g, y, default_mapping, apply_to_key)
+        if is_iterable(y):
+            return reconstruct_sequence(g, y, default_sequence)
+        if condition(y):
+            return f(y)
         return x
     return g(x)
 

@@ -106,7 +106,7 @@ def safe_decode(x, encoding='utf-8'):
     return x
 
 
-def reconstruct_array(data, c, default_array=list):
+def cons_array(data, c, default_array=list):
     """Return an instance of c whose elements are data. Return an instance of
     default_array if c cannot take data as an argument for the constructor.
 
@@ -120,7 +120,7 @@ def reconstruct_array(data, c, default_array=list):
         return default_array(data)
 
 
-def reconstruct_map(data, c, default_map=dict):
+def cons_map(data, c, default_map=dict):
     """Return an instance of c whose elements are data. Return an instance of
     default_map if c cannot take data as an argument for the constructor.
 
@@ -178,20 +178,12 @@ def rec_apply(f, x, condition=const(True), is_map=is_map,
     def g(y):
         if is_map(y):
             if apply_to_key:
-                return reconstruct_map(
-                    ((g(k), g(v)) for k, v in y.items()),
-                    y.__class__,
-                    default_map
-                )
-            return reconstruct_map(
-                ((k, g(v)) for k, v in y.items()),
-                y.__class__,
-                default_map
-            )
+                return cons_map(((g(k), g(v)) for k, v in y.items()),
+                                y.__class__, default_map)
+            return cons_map(((k, g(v)) for k, v in y.items()), y.__class__,
+                            default_map)
         if is_array(y):
-            return reconstruct_array(
-                (g(v) for v in y), y.__class__, default_array
-            )
+            return cons_array((g(v) for v in y), y.__class__, default_array)
         if condition(y):
             return f(y)
         return y

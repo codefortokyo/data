@@ -51,9 +51,14 @@ class feature(object):
 
     @properties.setter
     def properties(self, x):
+        """このインスタンスの properties を設定する
+
+        :param x: Mapping オブジェクト
+        """
         if not util.isMapping(x):
             raise Exception('properties must be an instance of Mapping')
         self.__properties = rDecode(x)
+        return self
 
     @property
     def geometry(self):
@@ -61,11 +66,36 @@ class feature(object):
         """
         return self.__geometry
 
+    @geometry.setter
+    def geometry(self, x):
+        """このインスタンの geometry を設定する
+
+        :param x: shape か shape に変換可能な Mapping オブジェクト
+        """
+        if isinstance(x, shape):
+            self.__geometry = x
+        elif util.isMapping(x):
+            self.__geometry = shape(x)
+        else:
+            raise Exception('geometry must be an instance of shape')
+        return self
+
     @property
     def attributes(self):
         """このインスタンスのその他の属性の Mapping オブジェクトを返す
         """
         return self.__attributes
+
+    @attributes.setter
+    def attributes(self, x):
+        """このインスタンスのその他の属性を設定する
+
+        :param x: Mapping オブジェクト
+        """
+        if not util.isMapping(x):
+            raise Exception('attributes must be an instance of Mapping')
+        self.__attributes = rDecode(x)
+        return self
 
     def property(self, *x):
         """properties を set/get する。

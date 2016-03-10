@@ -7,6 +7,7 @@ import json
 
 import collections
 
+from shapely.geometry.point import BaseGeometry
 from shapely.geometry import shape, mapping
 from shapely.ops import cascaded_union
 
@@ -28,10 +29,7 @@ class Feature(object):
 
         :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
         """
-        if isinstance(data['geometry'], shape):
-            self._geometry = data['geometry']
-        else:
-            self._geometry = shape(data['geometry'])
+        self.geometry = data['geometry']
         self._properties = util.rec_decode(data['properties'])
         self._attributes = util.rec_decode({
             k: v for k, v in data.items()
@@ -58,7 +56,7 @@ class Feature(object):
 
         :param x: Mapping オブジェクト
         """
-        if not util.is_mapping(x):
+        if not util.is_map(x):
             raise Exception('properties must be an instance of Mapping')
         self._properties = rDecode(x)
         return self
@@ -75,9 +73,9 @@ class Feature(object):
 
         :param x: shape か shape に変換可能な Mapping オブジェクト
         """
-        if isinstance(x, shape):
+        if isinstance(x, BaseGeometry):
             self._geometry = x
-        elif util.is_mapping(x):
+        elif util.is_map(x):
             self._geometry = shape(x)
         else:
             raise Exception('geometry must be an instance of shape')
@@ -95,7 +93,7 @@ class Feature(object):
 
         :param x: Mapping オブジェクト
         """
-        if not util.is_mapping(x):
+        if not util.is_map(x):
             raise Exception('attributes must be an instance of Mapping')
         self._attributes = rDecode(x)
         return self
@@ -110,18 +108,16 @@ class Feature(object):
         if len(x) == 0:
             return self
         if len(x) == 1:
-            if util.is_mapping(x[0]):
+            if util.is_map(x[0]):
                 for k, v in util.rec_decode(x[0]):
                     self.property(k, v)
                 return self
             if isinstance(x[0], collections.Set):
                 return {k: self.property(k) for k in util.rec_decode(x[0])}
-            if util.is_iterable(x[0]):
-                res = tuple(self.property(k) for k in util.rec_decode(x[0]))
-                try:
-                    return x[0]._class_(res)
-                except:
-                    return res
+            if util.is_array(x[0]):
+                return util.cons_array(
+                    (self.attr(k) for k in util.rec_decode(x[0])),
+                    x[0].__class__, tuple)
             k = util.safe_decode(x[0])
             if not util.is_string(x[0]):
                 k = unicode(x[0])
@@ -149,18 +145,16 @@ class Feature(object):
         if len(x) == 0:
             return self
         if len(x) == 1:
-            if util.is_mapping(x[0]):
+            if util.is_map(x[0]):
                 for k, v in util.rec_decode(x[0]):
                     self.attr(k, v)
                 return self
             if isinstance(x[0], collections.Set):
                 return {k: self.attr(k) for k in util.rec_decode(x[0])}
-            if util.is_iterable(x[0]):
-                res = tuple(self.attr(k) for k in util.rec_decode(x[0]))
-                try:
-                    return x[0]._class_(res)
-                except:
-                    return res
+            if util.is_array(x[0]):
+                return util.cons_array(
+                    (self.attr(k) for k in util.rec_decode(x[0])),
+                    x[0].__class__, tuple)
             k = util.safe_decode(x[0])
             if not util.is_string(x[0]):
                 k = unicode(x[0])

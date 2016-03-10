@@ -16,80 +16,80 @@ shortuuid.set_alphabet(
 
 
 def _print(x):
-    """print 文の関数版。
+    """Print x.
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     print x
 
 
 def _raise(x):
-    """raise 文の関数版。この関数の中から x　をraise する
+    """Raise x
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     raise x
 
 
 def gen_id():
-    """22文字のUUIDを生成する
+    """Return generated short UUID.
     """
     return shortuuid.uuid()
 
 
 def const(x):
-    """常にxを返す関数を返す
+    """Return a function which always returns x
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     return lambda *args, **kwargs: x
 
 
-def is_mapping(x):
-    """xが辞書系オブジェクトならTrue、そうでなければFalseを返す
+def is_map(x):
+    """Return True if x is an instance of Mappings, False otherwise.
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     return isinstance(x, collections.Mapping)
 
 
 def is_string(x):
-    """xがunicode文字列か文字列ならTrue、そうでなければFalseを返す
+    """Return True if x is a unicode or a str, False otherwise.
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     return isinstance(x, basestring)
 
 
-def is_iterable(x):
-    """xがiterableであり、文字列系でない場合True、そうでなければFalseを返す
+def is_array(x):
+    """Return True if x is iterable and not basestring, False otherwise.
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     return (isinstance(x, collections.Iterable) and not
             isinstance(x, basestring))
 
 
 def is_readable(x):
-    """xがread可能なオブジェクトの場合True、そうでなければFalseを返す
+    """Return True if x.read() is possible, False otherwise.
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     return hasattr(x, 'read') and hasattr(x.read, '__call__')
 
 
 def is_writable(x):
-    """xがwrite可能なオブジェクトの場合True、そうでなければFalseを返す
+    """Return True if x.write() is possible, False otherwise.
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     return hasattr(x, 'write') and hasattr(x.write, '__call__')
 
 
 def safe_encode(x, encoding='utf-8'):
-    """xがunicode文字列だった場合utf-8にエンコードして返す。それ以外はそのまま返す。
+    """Return encoded string of x if x is a unicode, x otherwise.
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     if isinstance(x, unicode):
         return x.encode(encoding)
@@ -97,45 +97,41 @@ def safe_encode(x, encoding='utf-8'):
 
 
 def safe_decode(x, encoding='utf-8'):
-    """xがstr文字列だった場合unicodeにデコードして返す。それ以外はそのまま返す。
+    """Return decoded string if x is a str, x otherwise.
 
-    :param x: 任意のオブジェクト
+    :param x: object
     """
     if isinstance(x, str):
         return x.decode(encoding)
     return x
 
 
-def reconstruct_sequence(f, x, default_sequence=list):
-    """xの中身にfを掛けて、xと同じ型で再構築する。再構築に失敗した場合defaultSequence型で再構成する。
+def reconstruct_array(data, c, default_array=list):
+    """Return an instance of c whose elements are data. Return an instance of
+    default_array if c cannot take data as an argument for the constructor.
 
-    :param f: 引数を一つ取る関数
-    :param x: 任意のイテラブル
-    :param default_sequence: イテラブルのコンストラクタ
+    :param data: tuple of elements
+    :param c: class
+    :param default_array: class
     """
-    res = tuple(f(y) for y in x)
     try:
-        return x.__class__(res)
+        return c(data)
     except:
-        return default_sequence(res)
+        return default_array(data)
 
 
-def reconstruct_mapping(f, x, default_mapping=dict, apply_to_key=True):
-    """xの中身にfを掛けて、xと同じ型で再構築する。再構築に失敗した場合defaultMapping型で再構成する。
+def reconstruct_map(data, c, default_map=dict):
+    """Return an instance of c whose elements are data. Return an instance of
+    default_map if c cannot take data as an argument for the constructor.
 
-    :param f: 引数を一つ取る関数
-    :param x: 任意のイテラブル
-    :param defaultMapping: イテラブルのコンストラクタ
-    :param applyToKey: キーにもfを適用するかの真偽値
+    :param data: tuple of elements
+    :param c: class
+    :param default_array: class
     """
-    if apply_to_key:
-        res = tuple((f(k), f(v)) for k, v in x.items())
-    else:
-        res = tuple((k, f(v)) for k, v in x.items())
     try:
-        return x.__class__(res)
+        return c(data)
     except:
-        return default_mapping(res)
+        return default_map(data)
 
 
 def dt2ts(dt):
@@ -163,30 +159,42 @@ def is_url(x):
     return re.match(r'https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', x) is not None
 
 
-def rec_apply(f, x, condition=const(True), is_mapping=is_mapping,
-              is_iterable=is_iterable, apply_to_key=True,
-              default_mapping=dict, default_sequence=list):
+def rec_apply(f, x, condition=const(True), is_map=is_map,
+              is_array=is_array, apply_to_key=True,
+              default_map=dict, default_array=list):
     """xに対して再帰的にfを適用する。conditionで適用するかどうかの判定ができる。
 
     :param f: 一つの引数を取る関数
     :param x: 任意のオブジェクト
     :param condition: 一つの引数を取り、真偽値を返す関数
-    :param isMapping: 辞書系オブジェクトかどうか判定する関数
-    :param isIterable: イテレータオブジェクトかどうか判定する
-    :param applyToKey: 辞書系オブジェクトのkeyにも関数を適用するかどうかの真偽値
-    :param defaultMapping: 辞書系オブジェクトを構築する際に、元の型が維持できなかった場合に
+    :param is_map: 辞書系オブジェクトかどうか判定する関数
+    :param is_array: イテレータオブジェクトかどうか判定する
+    :param apply_to_key: 辞書系オブジェクトのkeyにも関数を適用するかどうかの真偽値
+    :param default_map: 辞書系オブジェクトを構築する際に、元の型が維持できなかった場合に
         用いられる辞書系オブジェクトのコンストラクタ
-    :param defaultSequence: リスト系オブジェクトを構築する際に、元の型が維持できなかった場合に
+    :param default_array: リスト系オブジェクトを構築する際に、元の型が維持できなかった場合に
         用いられるリストオブジェクトのコンストラクタ
     """
     def g(y):
-        if is_mapping(y):
-            return reconstruct_mapping(g, y, default_mapping, apply_to_key)
-        if is_iterable(y):
-            return reconstruct_sequence(g, y, default_sequence)
+        if is_map(y):
+            if apply_to_key:
+                return reconstruct_map(
+                    ((g(k), g(v)) for k, v in y.items()),
+                    y.__class__,
+                    default_map
+                )
+            return reconstruct_map(
+                ((k, g(v)) for k, v in y.items()),
+                y.__class__,
+                default_map
+            )
+        if is_array(y):
+            return reconstruct_array(
+                (g(v) for v in y), y.__class__, default_array
+            )
         if condition(y):
             return f(y)
-        return x
+        return y
     return g(x)
 
 

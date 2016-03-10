@@ -116,7 +116,7 @@ class Feature(object):
                 return {k: self.property(k) for k in util.rec_decode(x[0])}
             if util.is_array(x[0]):
                 return util.cons_array(
-                    (self.attr(k) for k in util.rec_decode(x[0])),
+                    (self.property(k) for k in util.rec_decode(x[0])),
                     x[0].__class__, tuple)
             k = util.safe_decode(x[0])
             if not util.is_string(x[0]):
@@ -170,19 +170,4 @@ class Feature(object):
                 del self._attributes[k]
             return self
         self._attributes[k] = v
-        return self
-
-    def isMatch(self, condition):
-        """このインスタンスの properties が condition に一致しているかどうか返す
-
-        :param condition: 一つの引数（propertiesが渡される）を取る関数
-        """
-        return condition(self._properties)
-
-    def join(self, d):
-        """d のキーヴァリューの組をこのインスタンスの properties に追加する
-
-        :param d: Mapping オブジェクト
-        """
-        self._properties = dict(self._properties, **d)
         return self

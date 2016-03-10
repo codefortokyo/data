@@ -119,7 +119,8 @@ def reconstruct_sequence(f, x, defaultSequence=list):
     except:
         return defaultSequence(res)
 
-def reconstructMapping(f, x, defaultMapping=dict, applyToKey=True):
+
+def reconstruct_mapping(f, x, defaultMapping=dict, applyToKey=True):
     """xの中身にfを掛けて、xと同じ型で再構築する。再構築に失敗した場合defaultMapping型で再構成する。
 
     :param f: 引数を一つ取る関数
@@ -128,37 +129,43 @@ def reconstructMapping(f, x, defaultMapping=dict, applyToKey=True):
     :param applyToKey: キーにもfを適用するかの真偽値
     """
     if applyToKey:
-        res = tuple( (f(k),f(v)) for k,v in x.items() )
+        res = tuple((f(k), f(v)) for k, v in x.items())
     else:
-        res = tuple( (k,f(v)) for k,v in x.items() )
+        res = tuple((k, f(v)) for k, v in x.items())
     try:
         return x.__class__(res)
     except:
         return defaultMapping(res)
 
 
-def dt2Ts(dt):
+def dt2ts(dt):
     """datetime型をtimestampに変換する
 
     :param dt: datetime型
     """
-    return int(time.mktime(dt.timetuple())*1000)+(dt.microsecond/1000)
+    return int(time.mktime(dt.timetuple()) * 1000) + (dt.microsecond / 1000)
 
-def ts2Dt(ts):
+
+def ts2dt(ts):
     """整数で表されたtimestampをdatetime型に変換する
 
     :param ts: 整数
     """
-    return datetime.fromtimestamp( int(ts)/1000 ).replace(microsecond=int(ts)%1000*1000)
+    return datetime.fromtimestamp(
+        int(ts) / 1000).replace(microsecond=int(ts) % 1000 * 1000)
 
-def isURL(x):
+
+def is_url(x):
     """xがURLのパターンにマッチすればTrue、そうでなければFalseを返す
 
     :param x: basestring
     """
     return re.match(r'https?://[\w/:%#\$&\?\(\)~\.=\+\-]+', x) is not None
 
-def rApply(f, x, condition=const(True), isMapping=isMapping, isIterable=isIterable, applyToKey=True, defaultMapping=dict, defaultSequence=list):
+
+def rec_apply(f, x, condition=const(True), is_mapping=is_mapping,
+              is_iterable=is_iterable, apply_to_key=True,
+              default_mapping=dict, default_sequence=list):
     """xに対して再帰的にfを適用する。conditionで適用するかどうかの判定ができる。
 
     :param f: 一つの引数を取る関数
@@ -167,35 +174,43 @@ def rApply(f, x, condition=const(True), isMapping=isMapping, isIterable=isIterab
     :param isMapping: 辞書系オブジェクトかどうか判定する関数
     :param isIterable: イテレータオブジェクトかどうか判定する
     :param applyToKey: 辞書系オブジェクトのkeyにも関数を適用するかどうかの真偽値
-    :param defaultMapping: 辞書系オブジェクトを構築する際に、元の型が維持できなかった場合に用いられる辞書系オブジェクトのコンストラクタ
-    :param defaultSequence: リスト系オブジェクトを構築する際に、元の型が維持できなかった場合に用いられるリストオブジェクトのコンストラクタ
+    :param defaultMapping: 辞書系オブジェクトを構築する際に、元の型が維持できなかった場合に
+    用いられる辞書系オブジェクトのコンストラクタ
+    :param defaultSequence: リスト系オブジェクトを構築する際に、元の型が維持できなかった場合に
+    用いられるリストオブジェクトのコンストラクタ
     """
-    g = lambda y: rApply(f, y, condition, isMapping, isIterable, applyToKey, defaultMapping, defaultSequence)
-    if isMapping(x):
-        return reconstructMapping(g, x, defaultMapping, applyToKey)
-    if isIterable(x):
-        return reconstructSequence(g, x, defaultSequence)
-    if condition(x):
-        return f(x)
-    return x
+    def g(y):
+        if is_mapping(x):
+            return reconstruct_mapping(g, x, default_mapping, apply_to_key)
+        if is_iterable(x):
+            return reconstruct_sequence(g, x, default_sequence)
+        if condition(x):
+            return f(x)
+        return x
+    return g(x)
 
-def rDecode(x, encoding='utf-8'):
+
+def rec_decode(x, encoding='utf-8'):
     """xに対して再帰的にx.decode(encoding)を掛ける
 
     :param x: 任意のオブジェクト
     :param encoding: エンコーディング。デフォルトはutf-8
     """
-    return rApply(lambda y:y.decode(encoding), x, condition=lambda y:isinstance(y,str))
+    return rec_apply(lambda y: y.decode(encoding), x,
+                     condition=lambda y: isinstance(y, str))
 
-def rEncode(x, encoding='utf-8'):
+
+def rec_encode(x, encoding='utf-8'):
     """xに対して再帰的にx.encode(encoding)を掛ける
 
     :param x: 任意のオブジェクト
     :param encoding: エンコーディング。デフォルトはutf-8
     """
-    return rApply(lambda y:y.encode(encoding), x, condition=lambda y:isinstance(y,unicode))
+    return rec_apply(lambda y: y.encode(encoding), x,
+                     condition=lambda y: isinstance(y, unicode))
 
-def rStr2Dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
+
+def rec_str2dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
     """xに対して再帰的にdatetime.strptime(x, timeFormat)を掛ける
 
     :param x: 任意のオブジェクト
@@ -206,12 +221,14 @@ def rStr2Dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
             return datetime.strptime(y, timeFormat)
         except:
             return y
-    return rApply(f, x, condition=lambda y: isinstance(y, basestring))
+    return rec_apply(f, x, condition=is_string)
 
-def rDt2Str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
+
+def rec_dt2str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
     """xに対して再帰的にx.strftime(timeFormat)を掛ける
 
     :param x: 任意のオブジェクト
     :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
     """
-    return rApply(lambda y:y.strftime(timeFormat), x, condition=lambda y:isinstance(y,datetime))
+    return rec_apply(lambda y: y.strftime(timeFormat), x,
+                     condition=lambda y: isinstance(y, datetime))

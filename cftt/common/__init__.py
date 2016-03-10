@@ -56,7 +56,7 @@ class feature(object):
     property('id') id 属性の値を取得する
     property('id', 'a123') id 属性の値を a123 に設定する
 
-    :param x:
+    :param x: 単一の値、list, dict, set, tupleまたはキーとヴァリューのペア
     """
     if len(x)==0:
       return self;
@@ -94,7 +94,7 @@ class feature(object):
     attr('id') id 属性の値を取得する
     attr('id', 'a123') id 属性の値を a123 に設定する
 
-    :param x:
+    :param x: 単一の値、list, dict, set, tupleまたはキーとヴァリューのペア
     """
     if len(x)==0:
       return self;
@@ -127,7 +127,6 @@ class feature(object):
       return self;
     self.__attributes[k] = v;
     return self;
-
   def isMatch(self, condition):
     """このインスタンスの properties が condition に一致しているかどうか返す
 

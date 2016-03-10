@@ -75,7 +75,7 @@ class feature(object):
           return res;
       k=util.safeDecode(x[0]);
       if not util.isString(x[0]):
-        k = util.safeDecode(str(x[0]));
+        k = unicode(x[0]);
       if k in self.__properties:
         return self.__properties[k];
       return None;
@@ -113,7 +113,7 @@ class feature(object):
           return res;
       k=util.safeDecode(x[0]);
       if not util.isString(x[0]):
-        k = util.safeDecode(str(x[0]));
+        k = unicode(x[0]);
       if k in self.__attributes:
         return self.__attributes[k];
       return None;

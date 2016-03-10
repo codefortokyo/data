@@ -13,7 +13,7 @@ from shapely.ops import cascaded_union
 import util
 
 
-class feature(object):
+class Feature(object):
     """単一の feature を扱うためのクラス
     """
     def __init__(self, data):

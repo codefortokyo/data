@@ -29,8 +29,8 @@ class Feature(object):
         :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
         """
         self._geometry = shape(data['geometry'])
-        self._properties = util.rDecode(data['properties'])
-        self._attributes = util.rDecode({
+        self._properties = util.rec_decode(data['properties'])
+        self._attributes = util.rec_decode({
             k: v for k, v in data.items()
             if k not in set(('geometry', 'properties', 'type'))
         })
@@ -40,7 +40,7 @@ class Feature(object):
         """このインスタンスを表す、json.dumpsなどでダンプ可能なオブジェクトを返す
         """
         return dict({u'type': u'Feature',
-                     u'geometry': util.rDecode(mapping(self._geometry)),
+                     u'geometry': util.rec_decode(mapping(self._geometry)),
                      u'properties': self._properties}, **self._attributes)
 
     @property
@@ -55,7 +55,7 @@ class Feature(object):
 
         :param x: Mapping オブジェクト
         """
-        if not util.isMapping(x):
+        if not util.is_mapping(x):
             raise Exception('properties must be an instance of Mapping')
         self._properties = rDecode(x)
         return self
@@ -74,7 +74,7 @@ class Feature(object):
         """
         if isinstance(x, shape):
             self._geometry = x
-        elif util.isMapping(x):
+        elif util.is_mapping(x):
             self._geometry = shape(x)
         else:
             raise Exception('geometry must be an instance of shape')
@@ -92,7 +92,7 @@ class Feature(object):
 
         :param x: Mapping オブジェクト
         """
-        if not util.isMapping(x):
+        if not util.is_mapping(x):
             raise Exception('attributes must be an instance of Mapping')
         self._attributes = rDecode(x)
         return self
@@ -107,28 +107,28 @@ class Feature(object):
         if len(x) == 0:
             return self
         if len(x) == 1:
-            if util.isMapping(x[0]):
-                for k, v in util.rDecode(x[0]):
+            if util.is_mapping(x[0]):
+                for k, v in util.rec_decode(x[0]):
                     self.property(k, v)
                 return self
             if isinstance(x[0], collections.Set):
-                return {k: self.property(k) for k in util.rDecode(x[0])}
-            if util.isIterable(x[0]):
-                res = tuple(self.property(k) for k in util.rDecode(x[0]))
+                return {k: self.property(k) for k in util.rec_decode(x[0])}
+            if util.is_iterable(x[0]):
+                res = tuple(self.property(k) for k in util.rec_decode(x[0]))
                 try:
                     return x[0]._class_(res)
                 except:
                     return res
-            k = util.safeDecode(x[0])
-            if not util.isString(x[0]):
+            k = util.safe_decode(x[0])
+            if not util.is_string(x[0]):
                 k = unicode(x[0])
             if k in self._properties:
                 return self._properties[k]
             return None
-        k = util.safeDecode(x[0])
-        if not util.isString(x[0]):
+        k = util.safe_decode(x[0])
+        if not util.is_string(x[0]):
             k = unicode(x[0])
-        v = util.safeDecode(x[1])
+        v = util.safe_decode(x[1])
         if v is None:
             if k in self._properties:
                 del self._properties[k]
@@ -146,28 +146,28 @@ class Feature(object):
         if len(x) == 0:
             return self
         if len(x) == 1:
-            if util.isMapping(x[0]):
-                for k, v in util.rDecode(x[0]):
+            if util.is_mapping(x[0]):
+                for k, v in util.rec_decode(x[0]):
                     self.attr(k, v)
                 return self
             if isinstance(x[0], collections.Set):
-                return {k: self.attr(k) for k in util.rDecode(x[0])}
-            if util.isIterable(x[0]):
-                res = tuple(self.attr(k) for k in util.rDecode(x[0]))
+                return {k: self.attr(k) for k in util.rec_decode(x[0])}
+            if util.is_iterable(x[0]):
+                res = tuple(self.attr(k) for k in util.rec_decode(x[0]))
                 try:
                     return x[0]._class_(res)
                 except:
                     return res
-            k = util.safeDecode(x[0])
-            if not util.isString(x[0]):
+            k = util.safe_decode(x[0])
+            if not util.is_string(x[0]):
                 k = unicode(x[0])
             if k in self._attributes:
                 return self._attributes[k]
             return None
-        k = util.safeDecode(x[0])
-        if not util.isString(x[0]):
+        k = util.safe_decode(x[0])
+        if not util.is_string(x[0]):
             k = unicode(x[0])
-        v = util.safeDecode(x[1])
+        v = util.safe_decode(x[1])
         if v is None:
             if k in self._attributes:
                 del self._attributes[k]

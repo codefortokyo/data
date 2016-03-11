@@ -30,11 +30,11 @@ class Feature(object):
         :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
         """
         self.geometry = data['geometry']
-        self._properties = util.rec_decode(data['properties'])
-        self._attributes = util.rec_decode({
+        self.properties = data['properties']
+        self.attributes = {
             k: v for k, v in data.items()
             if k not in set(('geometry', 'properties', 'type'))
-        })
+        }
         return self
 
     def dump(self):

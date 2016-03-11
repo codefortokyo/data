@@ -62,12 +62,13 @@ def is_string(x):
 
 
 def is_array(x):
-    """Return True if x is iterable and not basestring, False otherwise.
+    """Return True if x is iterable and not basestring or map, False otherwise.
 
     :param x: object
     """
     return (isinstance(x, collections.Iterable) and not
-            isinstance(x, basestring))
+            isinstance(x, basestring) and not
+            isinstance(x, collections.Mapping))
 
 
 def is_callable(x):
@@ -79,7 +80,8 @@ def is_callable(x):
 
 
 def is_readable(x):
-    """Return True if x has read method, False otherwise.
+    """Return True if x has read method, False otherwise. Don't check about
+    IOError.
 
     :param x: object
     """
@@ -87,7 +89,8 @@ def is_readable(x):
 
 
 def is_writable(x):
-    """Return True if x has write method, False otherwise.
+    """Return True if x has write method, False otherwise. Don't check about
+    IOError
 
     :param x: object
     """

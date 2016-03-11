@@ -70,20 +70,28 @@ def is_array(x):
             isinstance(x, basestring))
 
 
-def is_readable(x):
-    """Return True if x.read() is possible, False otherwise.
+def is_callable(x):
+    """Return True if x is callable, False otherwise.
 
     :param x: object
     """
-    return hasattr(x, 'read') and hasattr(x.read, '__call__')
+    return hasattr(x, '__call__')
+
+
+def is_readable(x):
+    """Return True if x has read method, False otherwise.
+
+    :param x: object
+    """
+    return hasattr(x, 'read') and is_callable(x.read)
 
 
 def is_writable(x):
-    """Return True if x.write() is possible, False otherwise.
+    """Return True if x has write method, False otherwise.
 
     :param x: object
     """
-    return hasattr(x, 'write') and hasattr(x.write, '__call__')
+    return hasattr(x, 'write') and is_callable(x.write)
 
 
 def safe_encode(x, encoding='utf-8'):

@@ -102,8 +102,10 @@ class ShapeFile(collections.Iterable):
                 resource.close()
                 self._load_from_zip(tmp.name)
             except Exception as e:
+                tmp.close()
                 os.remove(tmp.name)
                 raise e
+            tmp.close()
             os.remove(tmp.name)
 
     def _load_from_shp(self, shp):

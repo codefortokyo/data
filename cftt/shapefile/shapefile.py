@@ -91,6 +91,8 @@ class ShapeFile(collections.Iterable):
         :param url: url to the zipped ShapeFile.
         """
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            # to avoid windows NT's bug, call NamedTemporaryFile with
+            # delete=False flag and remove the temp file using os.remove
             try:
                 resource = urllib2.urlopen(url)
                 tmp.write(resource.read())
@@ -100,7 +102,8 @@ class ShapeFile(collections.Iterable):
                 resource.close()
                 self._load_from_zip(tmp.name)
             except Exception as e:
-                print str(e)
+                os.remove(tmp.name)
+                raise e
             os.remove(tmp.name)
 
     def _load_from_shp(self, shp):

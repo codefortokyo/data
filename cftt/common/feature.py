@@ -58,7 +58,7 @@ class Feature(object):
         """
         if not util.is_map(x):
             raise Exception('properties must be an instance of Mapping')
-        self._properties = rDecode(x)
+        self._properties = util.rec_decode(x)
         return self
 
     @property
@@ -95,7 +95,7 @@ class Feature(object):
         """
         if not util.is_map(x):
             raise Exception('attributes must be an instance of Mapping')
-        self._attributes = rDecode(x)
+        self._attributes = util.rec_decode(x)
         return self
 
     def property(self, *x):
@@ -109,7 +109,7 @@ class Feature(object):
             return self
         if len(x) == 1:
             if util.is_map(x[0]):
-                for k, v in util.rec_decode(x[0]):
+                for k, v in util.rec_decode(x[0]).items():
                     self.property(k, v)
                 return self
             if isinstance(x[0], collections.Set):

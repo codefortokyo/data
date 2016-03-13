@@ -58,5 +58,21 @@ class Tester(unittest.TestCase):
         self.assertTrue(util.is_writable(sys.stdout))
         self.assertFalse(util.is_writable('&&&&'))
 
+    def test_safe_encode(self):
+        self.assertEqual('日本語', util.safe_encode('日本語'))
+        self.assertEqual('日本語', util.safe_encode('日本語'.decode('utf-8')))
+
+    def test_safe_decode(self):
+        s = '日本語'.decode('utf-8')
+        self.assertEqual(s, util.safe_decode('日本語'))
+        self.assertEqual(s, util.safe_decode('日本語'.decode('utf-8')))
+
+    def test_cons_array(self):
+        pass
+
+    def test_cons_map(self):
+        pass
+
+
 if __name__ == '__main__':
     unittest.main()

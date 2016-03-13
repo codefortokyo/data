@@ -50,8 +50,6 @@ class ShapeFile(collections.Iterable):
                 self.__features = [Feature(s) for s in x['features']]
             if 'crs' in x:
                 self.__crs = x['crs']
-        else:
-            raise Exception('Unknown input format')
         return self
 
     def _load_from_fiona(self, f):
@@ -92,11 +90,18 @@ class ShapeFile(collections.Iterable):
 
         :param url: url to the zipped ShapeFile.
         """
-        with tempfile.NamedTemporaryFile() as tmp:
-            resource = urllib2.urlopen(url)
-            tmp.write(resource.read())
-            resource.close()
-            return self._load_from_zip(tmp.name)
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            try:
+                resource = urllib2.urlopen(url)
+                tmp.write(resource.read())
+                tmp.close()
+                os.rename(tmp.name, tmp.name+'.zip')
+                tmp.name = tmp.name+'.zip'
+                resource.close()
+                self._load_from_zip(tmp.name)
+            except Exception as e:
+                print str(e)
+            os.remove(tmp.name)
 
     def _load_from_shp(self, shp):
         """Load the shape file from shp. Return self.

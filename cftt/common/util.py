@@ -3,6 +3,7 @@
 import sys
 import os
 import collections
+import tempfile
 
 from datetime import datetime
 import time
@@ -243,3 +244,136 @@ def rec_dt2str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
     """
     return rec_apply(lambda y: y.strftime(timeFormat), x,
                      condition=lambda y: isinstance(y, datetime))
+
+
+class ReopenableTempFile(object):
+    _known_options = set(('mode', 'bufsize', 'suffix', 'prefix', 'dir'))
+
+    def __init__(self, **kwargs):
+        self._attributes = {}
+        self._file = None
+        self.attr(kwargs)
+
+    def attr(self, *x):
+        """set/get attributes.
+
+        attr('id'): Return value of 'id'
+
+        attr('id', 'a123'): set value of 'id' to 'a123' then return self
+
+        :param x: single key, list, dict, set, tuple or key-value pair
+        """
+        if len(x) == 0:
+            return self
+        if len(x) == 1:
+            if is_map(x[0]):
+                for k, v in rec_decode(x[0]).items():
+                    self.attr(k, v)
+                return self
+            if isinstance(x[0], collections.Set):
+                return {k: self.attr(k) for k in rec_decode(x[0])}
+            if is_array(x[0]):
+                return cons_array(
+                    (self.attr(k) for k in rec_decode(x[0])),
+                    x[0].__class__, tuple)
+            k = safe_decode(x[0])
+            if not is_string(x[0]):
+                k = unicode(x[0])
+            if k in self._attributes:
+                return self._attributes[k]
+            return None
+        k = safe_decode(x[0])
+        if not is_string(x[0]):
+            k = unicode(x[0])
+        v = rec_decode(x[1])
+        if v is None:
+            if k in self._attributes:
+                del self._attributes[k]
+            return self
+        if k not in self.__class__._known_options:
+            raise Exception('cannot set ' + k + ' of ReopenableTempFile.')
+        self._attributes[k] = v
+        return self
+
+    def __enter__(self):
+        self._file = tempfile.NamedTemporaryFile(delete=False,
+                                                 **self._attributes)
+        return self._file
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._file.close()
+        os.remove(self._file.name)
+
+    @property
+    def file(self):
+        if self._file is None:
+            return None
+        return self._file.file
+
+    def close(self):
+        if self._file is not None:
+            return self._file.close()
+
+    def flush(self):
+        if self._file is not None:
+            return self._file.flush()
+
+    def fileno(self):
+        if self._file is not None:
+            return self._file.fileno()
+
+    def next(self):
+        if self._file is not None:
+            return self._file.next()
+
+    def read(self, *args, **kwargs):
+        if self._file is not None:
+            return self._file.read(*args, **kwargs)
+
+    def readline(self, *args, **kwargs):
+        if self._file is not None:
+            return self._file.readline(*args, **kwargs)
+
+    def readlines(self, *args, **kwargs):
+        if self._file is not None:
+            return self._file.readlines(*args, **kwargs)
+
+    def seek(self, *args, **kwargs):
+        if self._file is not None:
+            return self._file.seek(*args, **kwargs)
+
+    def tell(self):
+        if self._file is not None:
+            return self._file.tell()
+
+    def truncate(self, *args, **kwargs):
+        if self._file is not None:
+            return self._file.truncate(*args, **kwargs)
+
+    def write(self, *args, **kwargs):
+        if self._file is not None:
+            return self._file.write(*args, **kwargs)
+
+    def writelines(self, *args, **kwargs):
+        if self._file is not None:
+            return self._file.writelines(*args, **kwargs)
+
+    @property
+    def closed(self):
+        if self._file is not None:
+            return self._file.closed
+
+    @property
+    def encoding(self):
+        if self._file is not None:
+            return self._file.encoding
+
+    @property
+    def mode(self):
+        if self._file is not None:
+            return self._file.mode
+
+    @property
+    def name(self):
+        if self._file is not None:
+            return self._file.name

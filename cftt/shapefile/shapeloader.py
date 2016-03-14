@@ -20,13 +20,48 @@ from .. common.feature import Feature, FeatureCollection
 
 
 class ShapeLoader(collections.Callable):
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(ShapeLoader, self).__init__()
-        self.__attributes = {}
+        self._attributes = {}
+        self.attr(kwargs)
 
-    def __call__(self, x, **kwargs):
-        #self.attr(kwargs)
-        return self._load(x)
+    def attr(self, *x):
+        if len(x) == 0:
+            return self
+        if len(x) == 1:
+            if util.is_map(x[0]):
+                for k, v in util.rec_decode(x[0]).items():
+                    self.attr(k, v)
+                return self
+            if isinstance(x[0], collections.Set):
+                return {k: self.attr(k) for k in util.rec_decode(x[0])}
+            if util.is_array(x[0]):
+                return util.cons_array(
+                    (self.attr(k) for k in util.rec_decode(x[0])),
+                    x[0].__class__, tuple)
+            k = util.safe_decode(x[0])
+            if not util.is_string(x[0]):
+                k = unicode(x[0])
+            if k in self._attributes:
+                return self._attributes[k]
+            return None
+        k = util.safe_decode(x[0])
+        if not util.is_string(x[0]):
+            k = unicode(x[0])
+        v = util.rec_decode(x[1])
+        if v is None:
+            if k in self._attributes:
+                del self._attributes[k]
+            return self
+        if util.is_callable(v):
+            self._attributes[k] = v
+        else:
+            self._attributes[k] = util.const(v)
+        return self
+
+    def __call__(self, x):
+        nonself = ShapeLoader(**self._attributes)
+        return nonself._load(x)
 
     def _load(self, x):
         """Return FeatureCollection. If x is
@@ -49,7 +84,7 @@ class ShapeLoader(collections.Callable):
         raise Exception('Unknown input format')
 
     def _load_from_fiona(self, f):
-        """Load from fiona object. Return self.
+        """Load from fiona object. Return FeatureCollection.
 
         :param f: fiona object
         """
@@ -58,15 +93,18 @@ class ShapeLoader(collections.Callable):
             a['crs'] = to_string(f.crs)
         except:
             pass
+        for k, v in self._attributes.items():
+            a[k] = v(f)
         a['features'] = []
         for s in f:
             a['features'].append(Feature(s))
         return FeatureCollection(a)
 
     def _load_from_zip(self, zip, name=None):
-        """Load the zipped shape file from zip. Return self.
+        """Load the zipped shape file from zip. Return FeatureCollection.
 
-        :param zip: zip
+        :param zip: zip file name.
+        :param name: shape file name with path in the zip file.
         """
         if name is not None:
             with fiona.open(
@@ -87,34 +125,23 @@ class ShapeLoader(collections.Callable):
                 return self._load_from_zip(zip, names[0])
 
     def _load_from_url(self, url):
-        """Load the zipped shape file from url. Return self.
+        """Load the zipped shape file from url. Return FeatureCollection.
 
         :param url: url to the zipped ShapeLoader.
         """
         with util.ReopenableTempFile(suffix='.zip') as tmp:
+            self.attr('original-url', url)
             resource = urllib2.urlopen(url)
             tmp.write(resource.read())
             tmp.close()
             return self._load_from_zip(tmp.name)
 
     def _load_from_shp(self, shp):
-        """Load the shape file from shp. Return self.
+        """Load the shape file from shp. Return FeatureCollection.
 
         :param shp: string
         """
         with fiona.drivers():
             with fiona.open(shp) as source:
+                self.attr('shp-name', shp)
                 return self._load_from_fiona(source)
-
-    def dump(self):
-        """Return dict object represents this instance.
-        """
-        return util.rec_decode(
-            dict({
-                'type': 'FeatureCollection',
-                'features': [f.dump() for f in self.__features]
-            }, **dict(
-                self.__attributes,
-                **((lambda x: {} if x is None else {'crs': x})(self.__crs))
-            ))
-        )

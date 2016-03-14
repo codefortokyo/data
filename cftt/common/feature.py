@@ -29,12 +29,17 @@ class Feature(object):
 
         :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
         """
-        self.geometry = data['geometry']
-        self.properties = data['properties']
-        self.attributes = {
-            k: v for k, v in data.items()
-            if k not in set(('geometry', 'properties', 'type'))
-        }
+        if isinstance(data, Feature):
+            self.geometry = data.geometry
+            self.properties = data.properties
+            self.attributes = data.attributes
+        else:
+            self.geometry = data['geometry']
+            self.properties = data['properties']
+            self.attributes = {
+                k: v for k, v in data.items()
+                if k not in set(('geometry', 'properties', 'type'))
+            }
         return self
 
     def dump(self):
@@ -127,7 +132,7 @@ class Feature(object):
         k = util.safe_decode(x[0])
         if not util.is_string(x[0]):
             k = unicode(x[0])
-        v = util.safe_decode(x[1])
+        v = util.rec_decode(x[1])
         if v is None:
             if k in self._properties:
                 del self._properties[k]
@@ -146,7 +151,7 @@ class Feature(object):
             return self
         if len(x) == 1:
             if util.is_map(x[0]):
-                for k, v in util.rec_decode(x[0]):
+                for k, v in util.rec_decode(x[0]).items():
                     self.attr(k, v)
                 return self
             if isinstance(x[0], collections.Set):
@@ -164,10 +169,124 @@ class Feature(object):
         k = util.safe_decode(x[0])
         if not util.is_string(x[0]):
             k = unicode(x[0])
-        v = util.safe_decode(x[1])
+        v = util.rec_decode(x[1])
         if v is None:
             if k in self._attributes:
                 del self._attributes[k]
             return self
         self._attributes[k] = v
         return self
+
+
+class FeatureCollection(collections.MutableSequence):
+    def __init__(self, x):
+        super(FeatureCollection, self).__init__()
+        self.__features = []
+        self.__attributes = {}
+        self.load(x)
+
+    def load(self, x):
+        if isinstance(x, FeatureCollection):
+            self.__features = x.__features
+            self.__attributes = x.__attributes
+        elif util.is_map(x):
+            self.__attributes = util.rec_decode({
+                k: v for k, v in x.items()
+                if k not in set(('features', 'type'))})
+            self.__features = [Feature(y) for y in x['features']]
+        return self
+
+    def dump(self):
+        return util.rec_decode(dict({
+            'type': 'FeatureCollection',
+            'features': [f.dump() for f in self.__features]
+        }, **self.__attributes))
+
+    def attr(self, *x):
+        """set/get attributes.
+
+        attr('id'): Return value of 'id'
+
+        attr('id', 'a123'): set value of 'id' to 'a123' then return self
+
+        :param x: single key, list, dict, set, tuple or key-value pair
+        """
+        if len(x) == 0:
+            return self
+        if len(x) == 1:
+            if util.is_map(x[0]):
+                for k, v in util.rec_decode(x[0]).items():
+                    self.attr(k, v)
+                return self
+            if isinstance(x[0], collections.Set):
+                return {k: self.attr(k) for k in util.rec_decode(x[0])}
+            if util.is_array(x[0]):
+                return util.cons_array(
+                    (self.attr(k) for k in util.rec_decode(x[0])),
+                    x[0].__class__, tuple)
+            k = util.safe_decode(x[0])
+            if not util.is_string(x[0]):
+                k = unicode(x[0])
+            if k in self._attributes:
+                return self._attributes[k]
+            return None
+        k = util.safe_decode(x[0])
+        if not util.is_string(x[0]):
+            k = unicode(x[0])
+        v = util.rec_decode(x[1])
+        if v is None:
+            if k in self._attributes:
+                del self._attributes[k]
+            return self
+        self._attributes[k] = v
+        return self
+
+    @property
+    def attributes(self):
+        return self.__attributes
+
+    @attributes.setter
+    def attributes(self, x):
+        """Set attributes of this instance. Return self.
+
+        :param x: mapping
+        """
+        if not util.is_map(x):
+            raise Exception('attributes must be a mapping.')
+        self.__attributes = util.rec_decode(x)
+        return self
+
+    @property
+    def features(self):
+        """Return features
+        """
+        return self.__features
+
+    @features.setter
+    def features(self, x):
+        """Set features of this instance. Return self.
+
+        :param x: linear iterable
+        """
+        if not util.is_array(x):
+            raise Exception('features must be a linear iterable container.')
+        self.__features = [Feature(y) for y in x]
+        return self
+
+    def __iter__(self):
+        return self.__features.__iter__()
+
+    def __getitem__(self, i):
+        return self.__features.__getitem__(i)
+
+    def __setitem__(self, i, x):
+        return self.__features.__setitem__(i, Feature(x))
+
+    def __delitem__(self, i):
+        return self.__features.__delitem__(i)
+
+    def __len__(self):
+        return self.__features.__len__()
+
+    def insert(self, i, x):
+        return self.__features.insert(i, Feature(x))

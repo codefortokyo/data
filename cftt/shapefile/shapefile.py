@@ -16,23 +16,25 @@ import fiona
 from fiona.crs import to_string
 
 from .. common import util
-from .. common.feature import Feature
+from .. common.feature import Feature, FeatureCollection
 
 
-class ShapeFile(collections.Iterable):
-    def __init__(self, x):
-        super(ShapeFile, self).__init__()
-        self.__features = []
+class ShapeLoader(collections.Callable):
+    def __init__(self):
+        super(ShapeLoader, self).__init__()
         self.__attributes = {}
-        self.__crs = None
-        self.load(x)
 
-    def load(self, x):
-        if isinstance(x, ShapeFile):
-            self.__features = x.__features
-            self.__attributes = x.__attributes
-            self.__crs = x.__crs
-            return self
+    def __call__(self, x, **kwargs):
+        #self.attr(kwargs)
+        return self._load(x)
+
+    def _load(self, x):
+        """Return FeatureCollection. If x is
+
+        :param x:
+        """
+        if isinstance(x, FeatureCollection):
+            return x
         elif util.is_string(x):
             if util.is_url(x):
                 return self._load_from_url(x)
@@ -43,24 +45,23 @@ class ShapeFile(collections.Iterable):
             else:
                 raise Exception('Unknown input format')
         elif util.is_map(x):
-            self.__attributes = util.rec_decode({
-                k: v for k, v in x.items() if k not in set(('features', 'crs'))
-            })
-            if 'features' in x:
-                self.__features = [Feature(s) for s in x['features']]
-            if 'crs' in x:
-                self.__crs = x['crs']
-        return self
+            return FeatureCollection(x)
+        raise Exception('Unknown input format')
 
     def _load_from_fiona(self, f):
         """Load from fiona object. Return self.
 
         :param f: fiona object
         """
-        self.__crs = to_string(f.crs)
-        self.__attributes = {}
+        a = {}
+        try:
+            a['crs'] = to_string(f.crs)
+        except:
+            pass
+        a['features'] = []
         for s in f:
-            self.__features.append(Feature(s))
+            a['features'].append(Feature(s))
+        return FeatureCollection(a)
 
     def _load_from_zip(self, zip, name=None):
         """Load the zipped shape file from zip. Return self.
@@ -88,25 +89,13 @@ class ShapeFile(collections.Iterable):
     def _load_from_url(self, url):
         """Load the zipped shape file from url. Return self.
 
-        :param url: url to the zipped ShapeFile.
+        :param url: url to the zipped ShapeLoader.
         """
-        with tempfile.NamedTemporaryFile(delete=False) as tmp:
-            # to avoid windows NT's bug, call NamedTemporaryFile with
-            # delete=False flag and remove the temp file using os.remove
-            try:
-                resource = urllib2.urlopen(url)
-                tmp.write(resource.read())
-                tmp.close()
-                os.rename(tmp.name, tmp.name+'.zip')
-                tmp.name = tmp.name+'.zip'
-                resource.close()
-                self._load_from_zip(tmp.name)
-            except Exception as e:
-                tmp.close()
-                os.remove(tmp.name)
-                raise e
+        with util.ReopenableTempFile(suffix='.zip') as tmp:
+            resource = urllib2.urlopen(url)
+            tmp.write(resource.read())
             tmp.close()
-            os.remove(tmp.name)
+            return self._load_from_zip(tmp.name)
 
     def _load_from_shp(self, shp):
         """Load the shape file from shp. Return self.
@@ -129,9 +118,3 @@ class ShapeFile(collections.Iterable):
                 **((lambda x: {} if x is None else {'crs': x})(self.__crs))
             ))
         )
-
-    def __iter__(self):
-        return self.__features.__iter__()
-
-    def __len__(self):
-        return self.__features.__len__()

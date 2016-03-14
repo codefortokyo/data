@@ -181,26 +181,26 @@ class Feature(object):
 class FeatureCollection(collections.MutableSequence):
     def __init__(self, x):
         super(FeatureCollection, self).__init__()
-        self.__features = []
-        self.__attributes = {}
+        self._features = []
+        self._attributes = {}
         self.load(x)
 
     def load(self, x):
         if isinstance(x, FeatureCollection):
-            self.__features = x.__features
-            self.__attributes = x.__attributes
+            self._features = x._features
+            self._attributes = x._attributes
         elif util.is_map(x):
-            self.__attributes = util.rec_decode({
+            self._attributes = util.rec_decode({
                 k: v for k, v in x.items()
                 if k not in set(('features', 'type'))})
-            self.__features = [Feature(y) for y in x['features']]
+            self._features = [Feature(y) for y in x['features']]
         return self
 
     def dump(self):
         return util.rec_decode(dict({
             'type': 'FeatureCollection',
-            'features': [f.dump() for f in self.__features]
-        }, **self.__attributes))
+            'features': [f.dump() for f in self._features]
+        }, **self._attributes))
 
     def attr(self, *x):
         """set/get attributes.
@@ -243,7 +243,7 @@ class FeatureCollection(collections.MutableSequence):
 
     @property
     def attributes(self):
-        return self.__attributes
+        return self._attributes
 
     @attributes.setter
     def attributes(self, x):
@@ -253,14 +253,14 @@ class FeatureCollection(collections.MutableSequence):
         """
         if not util.is_map(x):
             raise Exception('attributes must be a mapping.')
-        self.__attributes = util.rec_decode(x)
+        self._attributes = util.rec_decode(x)
         return self
 
     @property
     def features(self):
         """Return features
         """
-        return self.__features
+        return self._features
 
     @features.setter
     def features(self, x):
@@ -270,23 +270,23 @@ class FeatureCollection(collections.MutableSequence):
         """
         if not util.is_array(x):
             raise Exception('features must be a linear iterable container.')
-        self.__features = [Feature(y) for y in x]
+        self._features = [Feature(y) for y in x]
         return self
 
     def __iter__(self):
-        return self.__features.__iter__()
+        return self._features.__iter__()
 
     def __getitem__(self, i):
-        return self.__features.__getitem__(i)
+        return self._features.__getitem__(i)
 
     def __setitem__(self, i, x):
-        return self.__features.__setitem__(i, Feature(x))
+        return self._features.__setitem__(i, Feature(x))
 
     def __delitem__(self, i):
-        return self.__features.__delitem__(i)
+        return self._features.__delitem__(i)
 
     def __len__(self):
-        return self.__features.__len__()
+        return self._features.__len__()
 
     def insert(self, i, x):
-        return self.__features.insert(i, Feature(x))
+        return self._features.insert(i, Feature(x))

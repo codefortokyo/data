@@ -12,10 +12,10 @@ cftt.shapefile.mlit module
     :undoc-members:
     :show-inheritance:
 
-cftt.shapefile.shapefile module
--------------------------------
+cftt.shapefile.shapeloader module
+---------------------------------
 
-.. automodule:: cftt.shapefile.shapefile
+.. automodule:: cftt.shapefile.shapeloader
     :members:
     :undoc-members:
     :show-inheritance:

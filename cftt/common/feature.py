@@ -186,6 +186,9 @@ class FeatureCollection(collections.MutableSequence):
         self.load(x)
 
     def load(self, x):
+        """Load an instance from FeatureCollection or a Mapping object
+        with 'features' attribute.
+        """
         if isinstance(x, FeatureCollection):
             self._features = x._features
             self._attributes = x._attributes
@@ -197,6 +200,8 @@ class FeatureCollection(collections.MutableSequence):
         return self
 
     def dump(self):
+        """Return dict object represents this instance.
+        """
         return util.rec_decode(dict({
             'type': 'FeatureCollection',
             'features': [f.dump() for f in self._features]
@@ -241,8 +246,13 @@ class FeatureCollection(collections.MutableSequence):
         self._attributes[k] = v
         return self
 
+    def aggregate(self, keys=None, property=None, attribute=None):
+        pass
+
     @property
     def attributes(self):
+        """Return attributes of this instance.
+        """
         return self._attributes
 
     @attributes.setter

@@ -247,7 +247,16 @@ class FeatureCollection(collections.MutableSequence):
         return self
 
     def aggregate(self, keys=None, property=None, attribute=None):
-        pass
+        """Return another FeatureCollection whose features are mereged
+        according to the result of the keys function. property and attribute
+        are used when features are reduced.
+
+        :param keys: a function takes properties and attributes of the feature
+        as arguments.
+        :param property: a function takes keys and a tuple of properties
+        :param attribute: a function takes keys and a tuple of attriutes
+        """
+        temp = {}
 
     @property
     def attributes(self):

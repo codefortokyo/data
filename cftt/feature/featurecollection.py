@@ -35,10 +35,10 @@ class FeatureCollection(collections.MutableSequence):
     def dump(self):
         """Return dict object represents this instance.
         """
-        return util.rec_decode(dict({
-            'type': 'FeatureCollection',
-            'features': [f.dump() for f in self._features]
-        }, **self._attributes))
+        return dict({
+            u'type': u'FeatureCollection',
+            u'features': [f.dump() for f in self._features]
+        }, **util.rec_decode(self._attributes))
 
     def attr(self, *x):
         """set/get attributes.
@@ -79,12 +79,12 @@ class FeatureCollection(collections.MutableSequence):
         self._attributes[k] = v
         return self
 
-    def aggregate(self, key=lambda f: tuple(f.properties),
+    def aggregate(self, key=lambda f: tuple(f.properties.values()),
                   prop=lambda k, fl: fl[0].properties,
                   attr=lambda k, fl: fl[0].attributes,
                   geom=lambda k, fl: cascaded_union(
                                         map(lambda x: x.geometry, fl)),
-                  cattr=lambda s: self.attributes):
+                  cattr=lambda s: s.attributes):
         """Return another FeatureCollection whose features are mereged
         according to the result of the keys function. property and attribute
         are used when features are reduced.

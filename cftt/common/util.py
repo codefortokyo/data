@@ -174,7 +174,8 @@ def is_url(x):
 def rec_apply(f, x, condition=const(True), is_map=is_map,
               is_array=is_array, apply_to_key=True,
               default_map=dict, default_array=list):
-    """xに対して再帰的にfを適用する。conditionで適用するかどうかの判定ができる。
+    """Return 
+    xに対して再帰的にfを適用する。conditionで適用するかどうかの判定ができる。
 
     :param f: 一つの引数を取る関数
     :param x: 任意のオブジェクト

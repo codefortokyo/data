@@ -174,7 +174,7 @@ def is_url(x):
 def rec_apply(f, x, condition=const(True), is_map=is_map,
               is_array=is_array, apply_to_key=True,
               default_map=dict, default_array=list):
-    """Return 
+    """Return
     xに対して再帰的にfを適用する。conditionで適用するかどうかの判定ができる。
 
     :param f: 一つの引数を取る関数
@@ -240,7 +240,7 @@ def rec_str2dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
 def rec_dt2str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
     """xに対して再帰的にx.strftime(timeFormat)を掛ける
 
-    :param x: 任意のオブジェクト
+    :param x: 任意のオブジェクトls
     :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
     """
     return rec_apply(lambda y: y.strftime(timeFormat), x,

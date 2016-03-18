@@ -2,14 +2,11 @@
 
 import sys
 import os
-
 import json
-
 import collections
 
 from shapely.geometry.point import BaseGeometry
 from shapely.geometry import shape, mapping
-from shapely.ops import cascaded_union
 
 from .. common import util
 

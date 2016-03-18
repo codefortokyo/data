@@ -79,17 +79,36 @@ class FeatureCollection(collections.MutableSequence):
         self._attributes[k] = v
         return self
 
-    def aggregate(self, keys=None, property=None, attribute=None):
+    def aggregate(self, key=lambda f: tuple(f.properties),
+                  prop=lambda k, fl: fl[0].properties,
+                  attr=lambda k, fl: fl[0].attributes,
+                  geom=lambda k, fl: cascaded_union(
+                                        map(lambda x: x.geometry, fl)),
+                  cattr=lambda s: self.attributes):
         """Return another FeatureCollection whose features are mereged
         according to the result of the keys function. property and attribute
         are used when features are reduced.
 
-        :param keys: a function takes properties and attributes of the feature
-        as arguments.
-        :param property: a function takes keys and a tuple of properties
-        :param attribute: a function takes keys and a tuple of attriutes
+        :param key: function takes a feature as an argument.
+        :param prop: function takes key and a list of features
+        :param attr: function takes key and a list of features
+        :param geom: function takes key and a list of features
+        :param cattr: function takes self
         """
         temp = {}
+        for f in self.features:
+            k = tuple(key(f))
+            if k not in temp:
+                temp[k] = []
+            temp[k].append(f)
+        return self.__class__(dict({
+            'features': [
+                Feature(dict({
+                    'properties': prop(k, fl),
+                    'geometry': geom(k, fl)
+                }, **attr(k, fl))) for k, fl in temp.items()
+            ]
+        }, **cattr(self)))
 
     @property
     def attributes(self):

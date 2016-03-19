@@ -16,7 +16,8 @@ import fiona
 from fiona.crs import to_string
 
 from .. common import util
-from .. common.feature import Feature, FeatureCollection
+from .. feature.feature import Feature
+from .. feature.featurecollection import FeatureCollection
 
 
 class ShapeLoader(collections.Callable):

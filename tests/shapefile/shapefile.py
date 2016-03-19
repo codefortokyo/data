@@ -20,5 +20,10 @@ class Tester(unittest.TestCase):
         s = l('http://www.esrij.com/cgi-bin/wp/wp-content/uploads/2015/08/japan_ver80.zip')
         self.assertNotEqual(s, None)
 
+    def test_Aggregate(self):
+        l = shapeloader.ShapeLoader()
+        s = l('http://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-15/N03-150101_13_GML.zip')
+        self.assertNotEqual(s.aggregate(), None)
+
 if __name__ == '__main__':
     unittest.main()

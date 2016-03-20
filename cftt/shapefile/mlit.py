@@ -2,7 +2,6 @@
 
 import getpass
 
-from .. common import util
 from shp2geojson import mainFunc
 
 

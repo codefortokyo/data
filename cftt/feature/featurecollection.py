@@ -87,7 +87,7 @@ class FeatureCollection(collections.MutableSequence):
 
     def aggregate(self, key=lambda f: tuple(f.properties.values()),
                   prop=lambda k, fl, i: fl[0].properties,
-                  attr=lambda k, fl, i: dict(fl[0].attributes, **{'id': i})
+                  attr=lambda k, fl, i: dict(fl[0].attributes, **{'id': i}),
                   geom=lambda k, fl, i: cascaded_union(
                                         map(lambda x: x.geometry, fl)),
                   cattr=lambda s: s.attributes):

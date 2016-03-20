@@ -38,13 +38,18 @@ def mainFunc():
 
     note = note_format.format(
         (lambda x: '' if x is None else ' ('+x+')')(args.dataname),
-        args.author or getpass.getuser()
+        args.username or getpass.getuser()
     )
 
     sl = ShapeLoader(note=note)
     fc = FeatureCollection(*map(lambda x: sl(x), args.input))
     if args.aggr:
-        fc = fc.aggregate()
+        fc = fc.aggregate(prop=lambda k, fl, i: {field_map[k]: v for k, v in
+                                                 fl[0].items()})
+    else:
+        for f in fc:
+            f.properties = {field_map[k]: v for k, v in f.properties.items()}
+
     if args.out is None:
         sys.stdout.write(json.dumps(fc.dump(encoding=args.encode),
                                     ensure_ascii=False))

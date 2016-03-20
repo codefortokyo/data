@@ -1,6 +1,6 @@
-## `mlit.py`
+## `cftt.shapefile.mlit`
 
-`shp2geojson` の国土数値情報向け設定
+`cftt.shapefile.shp2geojson` の国土数値情報向け設定
 
 ### usage
 

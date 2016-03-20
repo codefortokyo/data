@@ -12,29 +12,35 @@ from .. common import util
 
 
 class FeatureCollection(collections.MutableSequence):
-    def __init__(self, x):
+    def __init__(self, *args):
         super(FeatureCollection, self).__init__()
         self._features = []
         self._attributes = {}
-        self.load(x)
+        self.load(*args)
 
-    def load(self, x):
+    def load(self, *args):
         """Load an instance from FeatureCollection or a Mapping object
         with 'features' attribute.
         """
-        if isinstance(x, FeatureCollection):
-            self._features = x._features
-            self._attributes = x._attributes
-        elif util.is_map(x):
-            self._attributes = util.rec_decode({
-                k: v for k, v in x.items()
-                if k not in set(('features', 'type'))})
-            self._features = [Feature(y) for y in x['features']]
+        for x in args:
+            if isinstance(x, FeatureCollection):
+                self._features += x._features
+                self.attr(x._attributes)
+            elif util.is_map(x):
+                self.attr(util.rec_decode({
+                    k: v for k, v in x.items()
+                    if k not in set(('features', 'type'))}))
+                self._features += [Feature(y) for y in x['features']]
         return self
 
-    def dump(self):
+    def dump(self, encoding=None):
         """Return dict object represents this instance.
         """
+        if encoding is not None:
+            return dict({
+                'type': 'FeatureCollection',
+                'features': [f.dump(encoding=encoding) for f in self._features]
+            }, **util.rec_encode(self._attributes, encoding=encoding))
         return dict({
             u'type': u'FeatureCollection',
             u'features': [f.dump() for f in self._features]
@@ -80,9 +86,9 @@ class FeatureCollection(collections.MutableSequence):
         return self
 
     def aggregate(self, key=lambda f: tuple(f.properties.values()),
-                  prop=lambda k, fl: fl[0].properties,
-                  attr=lambda k, fl: fl[0].attributes,
-                  geom=lambda k, fl: cascaded_union(
+                  prop=lambda k, fl, i: fl[0].properties,
+                  attr=lambda k, fl, i: dict(fl[0].attributes, **{'id': i}),
+                  geom=lambda k, fl, i: cascaded_union(
                                         map(lambda x: x.geometry, fl)),
                   cattr=lambda s: s.attributes):
         """Return another FeatureCollection whose features are mereged
@@ -104,9 +110,9 @@ class FeatureCollection(collections.MutableSequence):
         return self.__class__(dict({
             'features': [
                 Feature(dict({
-                    'properties': prop(k, fl),
-                    'geometry': geom(k, fl)
-                }, **attr(k, fl))) for k, fl in temp.items()
+                    'properties': prop(t[0], t[1], i),
+                    'geometry': geom(t[0], t[1], i)
+                }, **attr(t[0], t[1], i))) for i, t in enumerate(temp.items())
             ]
         }, **cattr(self)))
 
@@ -161,3 +167,13 @@ class FeatureCollection(collections.MutableSequence):
 
     def insert(self, i, x):
         return self._features.insert(i, Feature(x))
+
+    def __iadd__(self, other):
+        self.attr(other.attributes)
+        self._features += other._features
+        return self
+
+    def __add__(self, other):
+        res = FeatureCollection(self)
+        res += other
+        return res

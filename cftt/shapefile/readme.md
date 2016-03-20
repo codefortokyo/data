@@ -1,3 +1,28 @@
+# `cftt.shapefile`
+
+## `cftt.shapefile.shp2geojson`
+
+shape files to geojson.
+
+### usage
+
+```sh
+$ python -m cftt.shapefile.shp2geojson [-h] [-e ENCODE] [-o OUT] [-a] input [input ...]
+```
+
+#### positional arguments
+
+  `input`
+
+#### optional arguments:
+
+  -h, --help            show this help message and exit
+  -e ENCODE, --encode ENCODE
+                        encoding (default: utf-8)
+  -o OUT, --output OUT  output file name (default: stdout)
+  -a, --aggregate       aggregate the output (default: False)
+
+
 ## `cftt.shapefile.mlit`
 
 `cftt.shapefile.shp2geojson` の国土数値情報向け設定。
@@ -11,7 +36,8 @@ $ python -m cftt.shapefile.mlit [-h] [-d DATANAME] [-e ENCODE] [-u USERNAME] [-a
 ```
 
 #### positional arguments:
-  input
+
+  `input`
 
 #### optional arguments:
   - `-h`, `--help`:            show this help message and exit
@@ -23,12 +49,6 @@ $ python -m cftt.shapefile.mlit [-h] [-d DATANAME] [-e ENCODE] [-u USERNAME] [-a
                         editor name (default: login user name)
   - `-a`, `--aggregate`:       aggregate the output (default: False)
   - `-o` OUT, `--output` OUT:  output file name (default: stdout)
-
-### example
-
-```sh
-$ python -m cftt.shapefile.mlit http://path.to.mlit/some_shapefile.zip -o output.json
-```
 
 ### requirements
 - Fiona>=1.6.2

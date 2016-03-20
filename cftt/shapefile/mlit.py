@@ -25,6 +25,8 @@ def mainFunc():
     parser.add_argument('input', nargs='+')
     parser.add_argument('-d', '--dataname', action='store', dest='dataname',
                         help='name of data (default: empty)')
+    parser.add_argument('-e', '--encode', action='store', dest='encode',
+                        help='encoding (default: utf-8)', default='utf-8')
     parser.add_argument('-a', '--author', action='store', dest='author',
                         help='author name (default: login user name)')
     parser.add_argument('-o', '--output', action='store', dest='out',
@@ -41,10 +43,12 @@ def mainFunc():
     fc = FeatureCollection(*map(lambda x: sl(x), args.input))
 
     if args.out is None:
-        sys.stdout.write(json.dumps(fc.dump(), ensure_ascii=False))
+        sys.stdout.write(json.dumps(fc.dump(encode=args.encode),
+                                    ensure_ascii=False))
     else:
         with open(args.out, 'w') as o:
-            o.write(json.dumps(fc.dump(), ensure_ascii=False))
+            o.write(json.dumps(fc.dump(encode=args.encode),
+                               ensure_ascii=False))
 
 
 if __name__ == '__main__':

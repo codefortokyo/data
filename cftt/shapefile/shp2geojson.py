@@ -33,10 +33,10 @@ def mainFunc(argparams=None, slparams=None, aggrparams=None, postproc=None):
 
     fc = FeatureCollection(*map(lambda x: sl(x), args.input))
     if args.aggr:
-        if aggrparams is None:
-            fc = fc.aggregate()
-        else aggrparams is not None:
+        if aggrparams is not None:
             fc = fc.aggregate(**aggrparams(args))
+        else:
+            fc = fc.aggregate()
 
     if postproc is not None:
         for f in fc:

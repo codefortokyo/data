@@ -1,63 +1,63 @@
 # -*- coding: utf-8 -*-
 
-import sys
-import json
+import getpass
 
-from shapeloader import ShapeLoader
-from .. feature.featurecollection import FeatureCollection
-
-field_map = {
-    "N03_001": "都道府県名",
-    "N03_002": "支庁・振興局名",
-    "N03_003": "郡・政令都市名",
-    "N03_004": "市区町村名",
-    "N03_007": "行政区域コード"
-}
-
-note_format = '国土交通省国土政策局「国土数値情報{0}」をもとに{1}が編集・加工'
+from shp2geojson import mainFunc
 
 
-def mainFunc():
-    import argparse
-    import getpass
+def _pr(p):
+    fm = {
+        "N03_001": "都道府県名",
+        "N03_002": "支庁・振興局名",
+        "N03_003": "郡・政令都市名",
+        "N03_004": "市区町村名",
+        "N03_007": "行政区域コード"
+    }
+    codes = {}
+    if 'N03_007' in p:
+        if p['N03_007'] is not None:
+            codes['都道府県コード'] = p['N03_007'][:2]
+            codes['市区町村コード'] = p['N03_007'][2:]
+        else:
+            codes['都道府県コード'] = None
+            codes['市区町村コード'] = None
+    return dict({fm[k]: v for k, v in p.items()}, **codes)
 
-    parser = argparse.ArgumentParser(description='shape files to geojson.')
-    parser.add_argument('input', nargs='+')
+
+def _argparams(parser):
     parser.add_argument('-d', '--dataname', action='store', dest='dataname',
                         help='name of data (default: empty)')
-    parser.add_argument('-e', '--encode', action='store', dest='encode',
-                        help='encoding (default: utf-8)', default='utf-8')
     parser.add_argument('-u', '--username', action='store', dest='username',
                         help='editor name (default: login user name)')
-    parser.add_argument('-a', '--aggregate', action='store_true', dest='aggr',
-                        help='aggregate the output (default: False)')
-    parser.add_argument('-o', '--output', action='store', dest='out',
-                        help='output file name (default: stdout)')
+    parser.add_argument('-p', '--publishdate', action='store', dest='pub',
+                        help='publish date of this data')
+    return parser
 
-    args = parser.parse_args()
 
-    note = note_format.format(
-        (lambda x: '' if x is None else ' ('+x+')')(args.dataname),
-        args.username or getpass.getuser()
-    )
+def _slparams(args):
+    ret = {
+        'note': '国土交通省国土政策局「国土数値情報{0}」をもとに{1}が編集・加工'.format(
+                (lambda x: '' if x is None else ' ('+x+')')(args.dataname),
+                args.username or getpass.getuser()
+            ),
+        'editor': args.username or getpass.getuser()
+    }
+    if args.pub is not None:
+        ret['publish-date'] = args.pub
+    return ret
 
-    sl = ShapeLoader(note=note)
-    fc = FeatureCollection(*map(lambda x: sl(x), args.input))
-    if args.aggr:
-        fc = fc.aggregate(prop=lambda k, fl, i: {field_map[k]: v for k, v in
-                                                 fl[0].items()})
-    else:
-        for f in fc:
-            f.properties = {field_map[k]: v for k, v in f.properties.items()}
 
-    if args.out is None:
-        sys.stdout.write(json.dumps(fc.dump(encoding=args.encode),
-                                    ensure_ascii=False))
-    else:
-        with open(args.out, 'w') as o:
-            o.write(json.dumps(fc.dump(encoding=args.encode),
-                               ensure_ascii=False))
+def _aggrparams(args):
+    return {
+        'key': lambda f: tuple([f.properties['N03_007']])
+    }
 
+
+def _postproc(f):
+    f.properties = _pr(f.properties)
 
 if __name__ == '__main__':
-    mainFunc()
+    mainFunc(argparams=_argparams,
+             slparams=_slparams,
+             aggrparams=_aggrparams,
+             postproc=_postproc)

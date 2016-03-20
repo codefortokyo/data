@@ -90,29 +90,33 @@ class FeatureCollection(collections.MutableSequence):
                   attr=lambda k, fl, i: dict(fl[0].attributes, **{'id': i}),
                   geom=lambda k, fl, i: cascaded_union(
                                         map(lambda x: x.geometry, fl)),
+                  sort=lambda k: k, reverse=False,
                   cattr=lambda s: s.attributes):
         """Return another FeatureCollection whose features are mereged
         according to the result of the keys function. property and attribute
         are used when features are reduced.
 
         :param key: function takes a feature as an argument.
-        :param prop: function takes key and a list of features
-        :param attr: function takes key and a list of features
-        :param geom: function takes key and a list of features
+        :param prop: function takes key, list of features and index
+        :param attr: function takes key, list of features and index
+        :param geom: function takes key, list of features and index
         :param cattr: function takes self
         """
-        temp = {}
+        temp = dict()
         for f in self.features:
             k = tuple(key(f))
             if k not in temp:
                 temp[k] = []
             temp[k].append(f)
+        temp = sorted([(k, v) for k, v in temp.items()],
+                      reverse=reverse,
+                      key=lambda x: sort(x[0]))
         return self.__class__(dict({
             'features': [
                 Feature(dict({
                     'properties': prop(t[0], t[1], i),
                     'geometry': geom(t[0], t[1], i)
-                }, **attr(t[0], t[1], i))) for i, t in enumerate(temp.items())
+                }, **attr(t[0], t[1], i))) for i, t in enumerate(temp)
             ]
         }, **cattr(self)))
 

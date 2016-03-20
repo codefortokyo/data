@@ -14,7 +14,7 @@ from .. common import util
 class Feature(object):
     """単一の feature を扱うためのクラス
     """
-    def __init__(self, data):
+    def __init__(self, data, **kwargs):
         """feature を構成する
 
         :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト

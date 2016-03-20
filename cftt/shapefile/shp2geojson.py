@@ -11,7 +11,6 @@ from .. feature.featurecollection import FeatureCollection
 
 def mainFunc(argparams=None, slparams=None, aggrparams=None, postproc=None):
     import argparse
-    import getpass
 
     parser = argparse.ArgumentParser(description='shape files to geojson.')
     parser.add_argument('input', nargs='+')

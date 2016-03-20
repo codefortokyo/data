@@ -12,24 +12,25 @@ from .. common import util
 
 
 class FeatureCollection(collections.MutableSequence):
-    def __init__(self, x):
+    def __init__(self, *args):
         super(FeatureCollection, self).__init__()
         self._features = []
         self._attributes = {}
-        self.load(x)
+        self.load(*args)
 
-    def load(self, x):
+    def load(self, *args):
         """Load an instance from FeatureCollection or a Mapping object
         with 'features' attribute.
         """
-        if isinstance(x, FeatureCollection):
-            self._features = x._features
-            self._attributes = x._attributes
-        elif util.is_map(x):
-            self._attributes = util.rec_decode({
-                k: v for k, v in x.items()
-                if k not in set(('features', 'type'))})
-            self._features = [Feature(y) for y in x['features']]
+        for x in args:
+            if isinstance(x, FeatureCollection):
+                self._features += x._features
+                self.attr(x._attributes)
+            elif util.is_map(x):
+                self.attr(util.rec_decode({
+                    k: v for k, v in x.items()
+                    if k not in set(('features', 'type'))}))
+                self._features += [Feature(y) for y in x['features']]
         return self
 
     def dump(self):
@@ -161,3 +162,13 @@ class FeatureCollection(collections.MutableSequence):
 
     def insert(self, i, x):
         return self._features.insert(i, Feature(x))
+
+    def __iadd__(self, other):
+        self.attr(other.attributes)
+        self._features += other._features
+        return self
+
+    def __add__(self, other):
+        res = FeatureCollection(self)
+        res += other
+        return res

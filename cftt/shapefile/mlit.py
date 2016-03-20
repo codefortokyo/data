@@ -2,17 +2,30 @@
 
 import sys
 import json
+from datetime import datetime
 
+from .. common import util
 from shapeloader import ShapeLoader
 from .. feature.featurecollection import FeatureCollection
 
-field_map = {
-    "N03_001": "都道府県名",
-    "N03_002": "支庁・振興局名",
-    "N03_003": "郡・政令都市名",
-    "N03_004": "市区町村名",
-    "N03_007": "行政区域コード"
-}
+
+def pr(p):
+    fm = {
+        "N03_001": "都道府県名",
+        "N03_002": "支庁・振興局名",
+        "N03_003": "郡・政令都市名",
+        "N03_004": "市区町村名",
+        "N03_007": "行政区域コード"
+    }
+    codes = {}
+    if 'N03_007' in p:
+        if p['N03_007'] is not None:
+            codes['都道府県コード'] = p['N03_007'][:2]
+            codes['市区町村コード'] = p['N03_007'][2:]
+        else:
+            codes['都道府県コード'] = None
+            codes['市区町村コード'] = None
+    return dict({fm[k]: v for k, v in p.items()}, **codes)
 
 note_format = '国土交通省国土政策局「国土数値情報{0}」をもとに{1}が編集・加工'
 
@@ -31,6 +44,8 @@ def mainFunc():
                         help='editor name (default: login user name)')
     parser.add_argument('-a', '--aggregate', action='store_true', dest='aggr',
                         help='aggregate the output (default: False)')
+    parser.add_argument('-p', '--publishdate', action='store', dest='pub',
+                        help='publish date of this data')
     parser.add_argument('-o', '--output', action='store', dest='out',
                         help='output file name (default: stdout)')
 
@@ -41,14 +56,16 @@ def mainFunc():
         args.username or getpass.getuser()
     )
 
-    sl = ShapeLoader(note=note)
+    sl = ShapeLoader(note=note,
+                     editor=args.username or getpass.getuser(),
+                     timestamp=util.dt2ts(datetime.now()))
     fc = FeatureCollection(*map(lambda x: sl(x), args.input))
     if args.aggr:
-        fc = fc.aggregate(prop=lambda k, fl, i: {field_map[k]: v for k, v in
-                                                 fl[0].properties.items()})
+        fc = fc.aggregate(key=lambda f: tuple([f.properties['N03_007']]),
+                          prop=lambda k, fl, i: pr(fl[0].properties))
     else:
         for f in fc:
-            f.properties = {field_map[k]: v for k, v in f.properties.items()}
+            f.properties = pr(f.properties)
 
     if args.out is None:
         sys.stdout.write(json.dumps(fc.dump(encoding=args.encode),
@@ -57,7 +74,6 @@ def mainFunc():
         with open(args.out, 'w') as o:
             o.write(json.dumps(fc.dump(encoding=args.encode),
                                ensure_ascii=False))
-
 
 if __name__ == '__main__':
     mainFunc()

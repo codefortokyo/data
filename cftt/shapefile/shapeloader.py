@@ -106,9 +106,10 @@ class ShapeLoader(collections.Callable):
         :param name: shape file name with path in the zip file.
         """
         if name is not None:
-            with fiona.open(
-                    (lambda n: n if n.startswith('/') else '/' + n)(name),
-                    vfs='zip://' + zip) as f:
+            fn = (lambda n: n if n.startswith('/') else '/' + n)(name)
+            with fiona.open(fn, vfs='zip://' + zip) as f:
+                self.attr('shp-name', fn)
+                self.attr('zip-name', zip)
                 return self._load_from_fiona(f)
         else:
             with zipfile.ZipFile(zip) as z:

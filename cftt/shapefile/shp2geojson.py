@@ -13,7 +13,8 @@ def mainFunc(argparams=None, slparams=None, aggrparams=None, postproc=None):
     import argparse
 
     parser = argparse.ArgumentParser(description='shape files to geojson.')
-    parser.add_argument('input', nargs='+')
+    parser.add_argument('input', nargs='+',
+                        help='path to shape file or zip file, URL to zip file')
     parser.add_argument('-e', '--encode', action='store', dest='encode',
                         help='encoding (default: utf-8)', default='utf-8')
     parser.add_argument('-o', '--output', action='store', dest='out',

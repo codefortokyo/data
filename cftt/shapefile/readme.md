@@ -7,21 +7,27 @@ shape files to geojson.
 ### usage
 
 ```sh
-$ python -m cftt.shapefile.shp2geojson [-h] [-e ENCODE] [-o OUT] [-a] input [input ...]
+$ python -m cftt.shapefile.shp2geojson [-h] [-e ENCODE] [-o OUT] [-a]
+                                       input [input ...]
 ```
 
 #### positional arguments
 
-  `input`
+- `input`
+    - path to shape file or zip file, URL to zip file
 
 #### optional arguments:
 
-  -h, --help            show this help message and exit
-  -e ENCODE, --encode ENCODE
-                        encoding (default: utf-8)
-  -o OUT, --output OUT  output file name (default: stdout)
-  -a, --aggregate       aggregate the output (default: False)
+- `-h`, `--help`
+    - show this help message and exit
+- `-e` ENCODE, `--encode` ENCODE
+    - encoding (default: utf-8)
+- `-o` OUT, `--output` OUT
+    - output file name (default: stdout)
+- `-a`, `--aggregate`
+    - aggregate the output (default: False)
 
+---
 
 ## `cftt.shapefile.mlit`
 
@@ -31,24 +37,32 @@ $ python -m cftt.shapefile.shp2geojson [-h] [-e ENCODE] [-o OUT] [-a] input [inp
 ### usage
 
 ```sh
-$ python -m cftt.shapefile.mlit [-h] [-d DATANAME] [-e ENCODE] [-u USERNAME] [-a] [-o OUT]
-               input [input ...]
+$ python -m cftt.shapefile.mlit [-h] [-e ENCODE] [-o OUT] [-a] [-d DATANAME] [-u USERNAME]
+                                [-p PUB]
+                                input [input ...]
 ```
 
-#### positional arguments:
+#### positional arguments
 
-  `input`
+- `input`
+    - path to shape file or zip file, URL to zip file
 
 #### optional arguments:
-  - `-h`, `--help`:            show this help message and exit
-  - `-d` DATANAME, `--dataname` DATANAME:
-                        name of data (default: empty)
-  - `-e` ENCODE, `--encode` ENCODE:
-                        encoding (default: utf-8)
-  - `-u` USERNAME, `--username` USERNAME:
-                        editor name (default: login user name)
-  - `-a`, `--aggregate`:       aggregate the output (default: False)
-  - `-o` OUT, `--output` OUT:  output file name (default: stdout)
+
+- `-h`, `--help`
+    - show this help message and exit
+- `-e` ENCODE, `--encode` ENCODE
+    - encoding (default: utf-8)
+- `-o` OUT, `--output` OUT
+    - output file name (default: stdout)
+- `-a`, `--aggregate`
+    - aggregate the output (default: False)
+- `-d` DATANAME, `--dataname` DATANAME
+    - name of data (default: empty)
+- `-u` USERNAME, `--username` USERNAME
+    - editor name (default: login user name)
+- `-p` PUB, `--publishdate` PUB
+    - publish date of this data
 
 ### requirements
 - Fiona>=1.6.2

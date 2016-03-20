@@ -13,6 +13,9 @@ def _pr(p):
         "N03_004": "市区町村名",
         "N03_007": "行政区域コード"
     }
+    for k in p:
+        if k not in fm:
+            fm[k] = k
     codes = {}
     if 'N03_007' in p:
         if p['N03_007'] is not None:
@@ -50,6 +53,7 @@ def _slparams(args):
 def _aggrparams(args):
     return {
         'key': lambda f: tuple([f.properties['N03_007']])
+        if 'N03_007' in f.properties else tuple(f.properties.keys())
     }
 
 

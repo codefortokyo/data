@@ -32,6 +32,9 @@ $ python -m cftt.shapefile.shp2geojson [-h] [-e ENCODE] [-o OUT] [-a]
 ## `cftt.shapefile.mlit`
 
 `cftt.shapefile.shp2geojson` の国土数値情報向け設定。
+クレジットに「国土交通省国土政策局「国土数値情報 (DATANAME)」をもとにUSERNAMEが編集・加工」を追加し
+出力に埋め込む。また、属性名をコードから日本語表記に直す、行政区域コードを都道府県コードと市区町村コード
+に分けた属性を追加するなどの加工も行う。
 
 
 ### usage

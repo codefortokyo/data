@@ -22,6 +22,10 @@ class Tester(unittest.TestCase):
 
     def test_Aggregate(self):
         l = shapeloader.ShapeLoader()
+from cftt.shapefile.shapeloader import ShapeLoader
+l = ShapeLoader()
+s = l('http://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-15/N03-150101_13_GML.zip')
+t = s.aggregate()
         s = l('http://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-15/N03-150101_13_GML.zip')
         self.assertNotEqual(s.aggregate(), None)
 

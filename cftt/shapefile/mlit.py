@@ -45,7 +45,7 @@ def mainFunc():
     fc = FeatureCollection(*map(lambda x: sl(x), args.input))
     if args.aggr:
         fc = fc.aggregate(prop=lambda k, fl, i: {field_map[k]: v for k, v in
-                                                 fl[0].items()})
+                                                 fl[0].properties.items()})
     else:
         for f in fc:
             f.properties = {field_map[k]: v for k, v in f.properties.items()}

@@ -24,8 +24,8 @@ $ python shp2geojson.py [-h] [-o OUT] files [files ...]
 
 ---
 ## `mlit.py`
-
-`shp2geojson` の国土数値情報向け設定
+`python -m cftt.shapefile.mlit http://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-15/N03-150101_13_GML.zip > out.json`
+`` の国土数値情報向け設定
 
 ### usage
 

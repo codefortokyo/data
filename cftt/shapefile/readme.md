@@ -1,6 +1,7 @@
 ## `cftt.shapefile.mlit`
 
-`cftt.shapefile.shp2geojson` の国土数値情報向け設定
+`cftt.shapefile.shp2geojson` の国土数値情報向け設定。
+
 
 ### usage
 
@@ -13,20 +14,20 @@ $ python -m cftt.shapefile.mlit [-h] [-d DATANAME] [-e ENCODE] [-u USERNAME] [-a
   input
 
 #### optional arguments:
-  - `-h`, `--help`            show this help message and exit
-  - `-d` DATANAME, `--dataname` DATANAME
+  - `-h`, `--help`:            show this help message and exit
+  - `-d` DATANAME, `--dataname` DATANAME:
                         name of data (default: empty)
-  - `-e` ENCODE, `--encode` ENCODE
+  - `-e` ENCODE, `--encode` ENCODE:
                         encoding (default: utf-8)
-  - `-u` USERNAME, `--username` USERNAME
+  - `-u` USERNAME, `--username` USERNAME:
                         editor name (default: login user name)
-  - `-a`, `--aggregate`       aggregate the output (default: False)
-  - `-o` OUT, `--output` OUT  output file name (default: stdout)
+  - `-a`, `--aggregate`:       aggregate the output (default: False)
+  - `-o` OUT, `--output` OUT:  output file name (default: stdout)
 
 ### example
 
 ```sh
-python -m cftt.shapefile.mlit http://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-15/N03-150101_13_GML.zip > out.json
+$ python -m cftt.shapefile.mlit http://path.to.mlit/some_shapefile.zip -o output.json
 ```
 
 ### requirements

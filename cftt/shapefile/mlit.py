@@ -27,8 +27,10 @@ def mainFunc():
                         help='name of data (default: empty)')
     parser.add_argument('-e', '--encode', action='store', dest='encode',
                         help='encoding (default: utf-8)', default='utf-8')
-    parser.add_argument('-a', '--author', action='store', dest='author',
-                        help='author name (default: login user name)')
+    parser.add_argument('-u', '--username', action='store', dest='username',
+                        help='editor name (default: login user name)')
+    parser.add_argument('-a', '--aggregate', action='store_true', dest='aggr',
+                        help='aggregate the output (default: False)')
     parser.add_argument('-o', '--output', action='store', dest='out',
                         help='output file name (default: stdout)')
 
@@ -41,13 +43,14 @@ def mainFunc():
 
     sl = ShapeLoader(note=note)
     fc = FeatureCollection(*map(lambda x: sl(x), args.input))
-
+    if args.aggr:
+        fc = fc.aggregate()
     if args.out is None:
-        sys.stdout.write(json.dumps(fc.dump(encode=args.encode),
+        sys.stdout.write(json.dumps(fc.dump(encoding=args.encode),
                                     ensure_ascii=False))
     else:
         with open(args.out, 'w') as o:
-            o.write(json.dumps(fc.dump(encode=args.encode),
+            o.write(json.dumps(fc.dump(encoding=args.encode),
                                ensure_ascii=False))
 
 

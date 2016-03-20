@@ -86,9 +86,9 @@ class FeatureCollection(collections.MutableSequence):
         return self
 
     def aggregate(self, key=lambda f: tuple(f.properties.values()),
-                  prop=lambda k, fl: fl[0].properties,
-                  attr=lambda k, fl: fl[0].attributes,
-                  geom=lambda k, fl: cascaded_union(
+                  prop=lambda k, fl, i: fl[0].properties,
+                  attr=lambda k, fl, i: dict(fl[0].attributes, **{'id': i})
+                  geom=lambda k, fl, i: cascaded_union(
                                         map(lambda x: x.geometry, fl)),
                   cattr=lambda s: s.attributes):
         """Return another FeatureCollection whose features are mereged
@@ -110,9 +110,9 @@ class FeatureCollection(collections.MutableSequence):
         return self.__class__(dict({
             'features': [
                 Feature(dict({
-                    'properties': prop(k, fl),
-                    'geometry': geom(k, fl)
-                }, **attr(k, fl))) for k, fl in temp.items()
+                    'properties': prop(t[0], t[1], i),
+                    'geometry': geom(t[0], t[1], i)
+                }, **attr(t[0], t[1], i))) for i, t in enumerate(temp.items())
             ]
         }, **cattr(self)))
 

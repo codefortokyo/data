@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import json
 
 from shapeloader import ShapeLoader
 from .. feature.featurecollection import FeatureCollection
@@ -32,7 +33,7 @@ def mainFunc():
     args = parser.parse_args()
 
     note = note_format.format(
-        (lambda x: '' if x is None else ' ('+x+'データ)')(args.dataname),
+        (lambda x: '' if x is None else ' ('+x+')')(args.dataname),
         args.author or getpass.getuser()
     )
 

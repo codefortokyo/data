@@ -39,9 +39,15 @@ class Feature(object):
             }
         return self
 
-    def dump(self):
+    def dump(self, encode=None):
         """このインスタンスを表す、json.dumpsなどでダンプ可能なオブジェクトを返す
         """
+        if encode is not None:
+            return dict({'type': 'Feature',
+                         'geometry': mapping(self._geometry),
+                         'properties': util.rec_encode(self._properties,
+                                                       encode=encode)},
+                        **util.rec_encode(self._attributes, encode=encode))
         return dict({u'type': u'Feature',
                      u'geometry': util.rec_decode(mapping(self._geometry)),
                      u'properties': self._properties}, **self._attributes)

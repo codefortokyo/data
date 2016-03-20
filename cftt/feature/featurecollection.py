@@ -33,9 +33,14 @@ class FeatureCollection(collections.MutableSequence):
                 self._features += [Feature(y) for y in x['features']]
         return self
 
-    def dump(self):
+    def dump(self, encode=None):
         """Return dict object represents this instance.
         """
+        if encode is not None:
+            return dict({
+                'type': 'FeatureCollection',
+                'features': [f.dump(encode=encode) for f in self._features]
+            }, **util.rec_encode(self._attributes, encode=encode))
         return dict({
             u'type': u'FeatureCollection',
             u'features': [f.dump() for f in self._features]

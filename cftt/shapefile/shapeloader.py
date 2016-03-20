@@ -10,8 +10,6 @@ import tempfile
 import zipfile
 import warnings
 
-from shapely.geometry import shape, mapping
-from shapely.ops import cascaded_union
 import fiona
 from fiona.crs import to_string
 

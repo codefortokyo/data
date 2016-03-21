@@ -134,7 +134,7 @@ class ShapeLoader(collections.Callable):
             resource = urllib2.urlopen(url)
             tmp.write(resource.read())
             tmp.close()
-            return self._load_from_zip(tmp.name)
+            return self._load_from_zip(tmp.name).attr('zip-name', url)
 
     def _load_from_shp(self, shp):
         """Load the shape file from shp. Return FeatureCollection.

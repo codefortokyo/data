@@ -16,47 +16,13 @@ from fiona.crs import to_string
 from .. common import util
 from .. feature.feature import Feature
 from .. feature.featurecollection import FeatureCollection
+from .. common import base
 
 
-class ShapeLoader(collections.Callable):
+class ShapeLoader(collections.Callable, base.BaseAttribute):
     def __init__(self, **kwargs):
         super(ShapeLoader, self).__init__()
-        self._attributes = {}
         self.attr(kwargs)
-
-    def attr(self, *x):
-        if len(x) == 0:
-            return self
-        if len(x) == 1:
-            if util.is_map(x[0]):
-                for k, v in util.rec_decode(x[0]).items():
-                    self.attr(k, v)
-                return self
-            if isinstance(x[0], collections.Set):
-                return {k: self.attr(k) for k in util.rec_decode(x[0])}
-            if util.is_array(x[0]):
-                return util.cons_array(
-                    (self.attr(k) for k in util.rec_decode(x[0])),
-                    x[0].__class__, tuple)
-            k = util.safe_decode(x[0])
-            if not util.is_string(x[0]):
-                k = unicode(x[0])
-            if k in self._attributes:
-                return self._attributes[k]
-            return None
-        k = util.safe_decode(x[0])
-        if not util.is_string(x[0]):
-            k = unicode(x[0])
-        v = util.rec_decode(x[1])
-        if v is None:
-            if k in self._attributes:
-                del self._attributes[k]
-            return self
-        if util.is_callable(v):
-            self._attributes[k] = v
-        else:
-            self._attributes[k] = util.const(v)
-        return self
 
     def __call__(self, x):
         nonself = ShapeLoader(**self._attributes)
@@ -93,7 +59,10 @@ class ShapeLoader(collections.Callable):
         except:
             pass
         for k, v in self._attributes.items():
-            a[k] = v(f)
+            if util.is_callable(v):
+                a[k] = v(f)
+            else:
+                a[k] = v
         a['features'] = []
         for s in f:
             a['features'].append(Feature(s))

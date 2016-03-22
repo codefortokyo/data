@@ -56,10 +56,27 @@ class BaseAttribute(object):
         self._attributes.clear()
         return self
 
+    def attribute_keys(self):
+        """Return list of keys of attributes of this instance
+        """
+        return self._attributes.keys()
+
+    def attribute_values(self):
+        """Return list of values of attributes of this instance
+        """
+        return self._attributes.values()
+
+    def attribute_items(self):
+        """Return list of (key, value) of attributes of this instance
+        """
+        return util.cons_map(self._attributes.items(),
+                             self._attributes.__class__,
+                             dict)
+
 
 class BaseProperty(object):
     def __init__(self, **kwargs):
-        super(BaseAttribute, self).__init__()
+        super(BaseProperty, self).__init__()
         self._properties = {}
         self.property(kwargs)
 
@@ -107,3 +124,20 @@ class BaseProperty(object):
         """
         self._properties.clear()
         return self
+
+    def property_keys(self):
+        """Return list of keys of properties of this instance
+        """
+        return self._properties.keys()
+
+    def property_values(self):
+        """Return list of values of properties of this instance
+        """
+        return self._properties.values()
+
+    def property_items(self):
+        """Return list of (key, value) of properties of this instance
+        """
+        return util.cons_map(self._properties.items(),
+                             self._properties.__class__,
+                             dict)

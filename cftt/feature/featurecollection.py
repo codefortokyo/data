@@ -9,27 +9,29 @@ from shapely.ops import cascaded_union
 
 from feature import Feature
 from .. common import util
+from .. common import base
 
 
-class FeatureCollection(collections.MutableSequence):
+class FeatureCollection(collections.MutableSequence, base.BaseAttribute):
     def __init__(self, *args):
         super(FeatureCollection, self).__init__()
         self._features = []
-        self._attributes = {}
         self.load(*args)
 
     def load(self, *args):
         """Load an instance from FeatureCollection or a Mapping object
         with 'features' attribute.
         """
+        self.clear_attributes()
+        self._features = []
         for x in args:
             if isinstance(x, FeatureCollection):
                 self._features += x._features
                 self.attr(x._attributes)
             elif util.is_map(x):
-                self.attr(util.rec_decode({
+                self.attr({
                     k: v for k, v in x.items()
-                    if k not in set(('features', 'type'))}))
+                    if k not in set(('features', 'type'))})
                 self._features += [Feature(y) for y in x['features']]
         return self
 
@@ -46,52 +48,14 @@ class FeatureCollection(collections.MutableSequence):
             u'features': [f.dump() for f in self._features]
         }, **util.rec_decode(self._attributes))
 
-    def attr(self, *x):
-        """set/get attributes.
-
-        attr('id'): Return value of 'id'
-
-        attr('id', 'a123'): set value of 'id' to 'a123' then return self
-
-        :param x: single key, list, dict, set, tuple or key-value pair
-        """
-        if len(x) == 0:
-            return self
-        if len(x) == 1:
-            if util.is_map(x[0]):
-                for k, v in util.rec_decode(x[0]).items():
-                    self.attr(k, v)
-                return self
-            if isinstance(x[0], collections.Set):
-                return {k: self.attr(k) for k in util.rec_decode(x[0])}
-            if util.is_array(x[0]):
-                return util.cons_array(
-                    (self.attr(k) for k in util.rec_decode(x[0])),
-                    x[0].__class__, tuple)
-            k = util.safe_decode(x[0])
-            if not util.is_string(x[0]):
-                k = unicode(x[0])
-            if k in self._attributes:
-                return self._attributes[k]
-            return None
-        k = util.safe_decode(x[0])
-        if not util.is_string(x[0]):
-            k = unicode(x[0])
-        v = util.rec_decode(x[1])
-        if v is None:
-            if k in self._attributes:
-                del self._attributes[k]
-            return self
-        self._attributes[k] = v
-        return self
-
-    def aggregate(self, key=lambda f: tuple(f.properties.values()),
-                  prop=lambda k, fl, i: fl[0].properties,
-                  attr=lambda k, fl, i: dict(fl[0].attributes, **{'id': i}),
+    def aggregate(self, key=lambda f: tuple(f.property_values()),
+                  prop=lambda k, fl, i: fl[0].property_items(),
+                  attr=lambda k, fl, i: dict(fl[0].attribute_items(),
+                                             **{'id': i}),
                   geom=lambda k, fl, i: cascaded_union(
                                         map(lambda x: x.geometry, fl)),
                   sort=lambda k: k, reverse=False,
-                  cattr=lambda s: s.attributes):
+                  cattr=lambda s: s.attribute_items()):
         """Return another FeatureCollection whose features are mereged
         according to the result of the keys function. property and attribute
         are used when features are reduced.
@@ -103,7 +67,7 @@ class FeatureCollection(collections.MutableSequence):
         :param cattr: function takes self
         """
         temp = dict()
-        for f in self.features:
+        for f in self:
             k = tuple(key(f))
             if k not in temp:
                 temp[k] = []
@@ -119,40 +83,6 @@ class FeatureCollection(collections.MutableSequence):
                 }, **attr(t[0], t[1], i))) for i, t in enumerate(temp)
             ]
         }, **cattr(self)))
-
-    @property
-    def attributes(self):
-        """Return attributes of this instance.
-        """
-        return self._attributes
-
-    @attributes.setter
-    def attributes(self, x):
-        """Set attributes of this instance. Return self.
-
-        :param x: mapping
-        """
-        if not util.is_map(x):
-            raise Exception('attributes must be a mapping.')
-        self._attributes = util.rec_decode(x)
-        return self
-
-    @property
-    def features(self):
-        """Return features
-        """
-        return self._features
-
-    @features.setter
-    def features(self, x):
-        """Set features of this instance. Return self.
-
-        :param x: linear iterable
-        """
-        if not util.is_array(x):
-            raise Exception('features must be a linear iterable container.')
-        self._features = [Feature(y) for y in x]
-        return self
 
     def __iter__(self):
         return self._features.__iter__()

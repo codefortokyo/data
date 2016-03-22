@@ -9,30 +9,34 @@ from shapely.geometry.point import BaseGeometry
 from shapely.geometry import shape, mapping
 
 from .. common import util
+from .. common import base
 
 
-class Feature(object):
-    """単一の feature を扱うためのクラス
+class Feature(base.BaseAttribute, base.BaseProperty):
+    """Class for single feature. Handle `geometry`, `properties` and `attributes`
     """
-    def __init__(self, data, **kwargs):
-        """feature を構成する
+    def __init__(self, data):
+        """Construct a feature from data
 
-        :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
+        :param data: a map with `geometry` and `properties` or a Feature
         """
+        super(Feature, self).__init__()
         self.load(data)
 
     def load(self, data):
-        """data を元に feature を構成する
+        """Construct a feature from the data
 
-        :param data: 'geometry' と 'properties' を属性に持った Mapping オブジェクト
+        :param data: a map with `geometry` and `properties` or a Feature
         """
         if isinstance(data, Feature):
             self.geometry = data.geometry
-            self.properties = data.properties
-            self.attributes = data.attributes
+            self.clear_properties()
+            self.property(data.property_items())
+            self.clear_attributes()
+            self.attr(data.attribute_items())
         else:
             self.geometry = data['geometry']
-            self.properties = data['properties']
+            self.property(data['properties'])
             self.attributes = {
                 k: v for k, v in data.items()
                 if k not in set(('geometry', 'properties', 'type'))
@@ -40,7 +44,9 @@ class Feature(object):
         return self
 
     def dump(self, encoding=None):
-        """このインスタンスを表す、json.dumpsなどでダンプ可能なオブジェクトを返す
+        """Return an object represents this instance.
+
+        :param encoding: string represents encoding. default unicode
         """
         if encoding is not None:
             return dict({'type': 'Feature',
@@ -53,33 +59,16 @@ class Feature(object):
                      u'properties': self._properties}, **self._attributes)
 
     @property
-    def properties(self):
-        """このインスタンスの properties オブジェクト自体を返す
-        """
-        return self._properties
-
-    @properties.setter
-    def properties(self, x):
-        """このインスタンスの properties を設定する
-
-        :param x: Mapping オブジェクト
-        """
-        if not util.is_map(x):
-            raise Exception('properties must be an instance of Mapping')
-        self._properties = util.rec_decode(x)
-        return self
-
-    @property
     def geometry(self):
-        """このインスタンスの geometry オブジェクト自体を返す
+        """Return `geometry` of this instance
         """
         return self._geometry
 
     @geometry.setter
     def geometry(self, x):
-        """このインスタンの geometry を設定する
+        """Set `geometry` of this instance
 
-        :param x: shape か shape に変換可能な Mapping オブジェクト
+        :param x: shape or a Map compatible with shape.
         """
         if isinstance(x, BaseGeometry):
             self._geometry = x
@@ -87,95 +76,4 @@ class Feature(object):
             self._geometry = shape(x)
         else:
             raise Exception('geometry must be an instance of shape')
-        return self
-
-    @property
-    def attributes(self):
-        """このインスタンスのその他の属性の Mapping オブジェクトを返す
-        """
-        return self._attributes
-
-    @attributes.setter
-    def attributes(self, x):
-        """このインスタンスのその他の属性を設定する
-
-        :param x: Mapping オブジェクト
-        """
-        if not util.is_map(x):
-            raise Exception('attributes must be an instance of Mapping')
-        self._attributes = util.rec_decode(x)
-        return self
-
-    def property(self, *x):
-        """properties を set/get する。
-        property('id') id 属性の値を取得する
-        property('id', 'a123') id 属性の値を a123 に設定する
-
-        :param x: 単一の値、list, dict, set, tupleまたはキーとヴァリューのペア
-        """
-        if len(x) == 0:
-            return self
-        if len(x) == 1:
-            if util.is_map(x[0]):
-                for k, v in util.rec_decode(x[0]).items():
-                    self.property(k, v)
-                return self
-            if isinstance(x[0], collections.Set):
-                return {k: self.property(k) for k in util.rec_decode(x[0])}
-            if util.is_array(x[0]):
-                return util.cons_array(
-                    (self.property(k) for k in util.rec_decode(x[0])),
-                    x[0].__class__, tuple)
-            k = util.safe_decode(x[0])
-            if not util.is_string(x[0]):
-                k = unicode(x[0])
-            if k in self._properties:
-                return self._properties[k]
-            return None
-        k = util.safe_decode(x[0])
-        if not util.is_string(x[0]):
-            k = unicode(x[0])
-        v = util.rec_decode(x[1])
-        if v is None:
-            if k in self._properties:
-                del self._properties[k]
-            return self
-        self._properties[k] = v
-        return self
-
-    def attr(self, *x):
-        """attributes を set/get する。
-        attr('id') id 属性の値を取得する
-        attr('id', 'a123') id 属性の値を a123 に設定する
-
-        :param x: 単一の値、list, dict, set, tupleまたはキーとヴァリューのペア
-        """
-        if len(x) == 0:
-            return self
-        if len(x) == 1:
-            if util.is_map(x[0]):
-                for k, v in util.rec_decode(x[0]).items():
-                    self.attr(k, v)
-                return self
-            if isinstance(x[0], collections.Set):
-                return {k: self.attr(k) for k in util.rec_decode(x[0])}
-            if util.is_array(x[0]):
-                return util.cons_array(
-                    (self.attr(k) for k in util.rec_decode(x[0])),
-                    x[0].__class__, tuple)
-            k = util.safe_decode(x[0])
-            if not util.is_string(x[0]):
-                k = unicode(x[0])
-            if k in self._attributes:
-                return self._attributes[k]
-            return None
-        k = util.safe_decode(x[0])
-        if not util.is_string(x[0]):
-            k = unicode(x[0])
-        v = util.rec_decode(x[1])
-        if v is None:
-            if k in self._attributes:
-                del self._attributes[k]
-            return self
-        self._attributes[k] = v
         return self

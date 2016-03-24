@@ -120,7 +120,7 @@ class FeatureCollection(collections.MutableSequence, base.BaseAttribute):
         return self._features.insert(i, Feature(x))
 
     def __iadd__(self, other):
-        self.attr(other.attributes)
+        self.attr(other.attribute_items())
         self._features += other._features
         return self
 

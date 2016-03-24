@@ -48,6 +48,23 @@ class FeatureCollection(collections.MutableSequence, base.BaseAttribute):
             u'features': [f.dump() for f in self._features]
         }, **util.rec_decode(self._attributes))
 
+    def filter(self, f):
+        """Return generator of features filtered by `f`
+
+        :param f: function takes a feature as an argument.
+        """
+        for feature in self:
+            if f(feature):
+                yield feature
+
+    def map(self, f):
+        """Return generator of features applied f
+
+        :param f: function takes a feature as an argument.
+        """
+        for feature in self:
+            yield Feature(f(feature))
+
     def aggregate(self, key=lambda f: tuple(f.property_values()),
                   prop=lambda k, fl, i: fl[0].property_items(),
                   attr=lambda k, fl, i: dict(fl[0].attribute_items(),
@@ -103,7 +120,7 @@ class FeatureCollection(collections.MutableSequence, base.BaseAttribute):
         return self._features.insert(i, Feature(x))
 
     def __iadd__(self, other):
-        self.attr(other.attributes)
+        self.attr(other.attribute_items())
         self._features += other._features
         return self
 

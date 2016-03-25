@@ -73,6 +73,25 @@ class BaseAttribute(object):
                              self._attributes.__class__,
                              dict)
 
+    @property
+    def attributes(self):
+        """Return a copy of attributes of this instance
+        """
+        return util.cons_map(self._attributes.items(),
+                             self._attributes.__class__,
+                             dict)
+
+    @attributes.setter
+    def attributes(self, x):
+        """Set attributes of this instance to x. Return self.
+
+        :param x: Mapping object
+        """
+        if not util.is_map(a):
+            raise Exception('attribute must be a map')
+        self._attributes = util.rec_decode(a)
+        return self
+
 
 class BaseProperty(object):
     def __init__(self, **kwargs):
@@ -141,3 +160,22 @@ class BaseProperty(object):
         return util.cons_map(self._properties.items(),
                              self._properties.__class__,
                              dict)
+
+    @property
+    def properties(self):
+        """Return a copy of properties of this instance
+        """
+        return util.cons_map(self._properties.items(),
+                             self._properties.__class__,
+                             dict)
+
+    @properties.setter
+    def properties(self, x):
+        """Set properties of this instance to x. Return self.
+
+        :param x: Mapping object
+        """
+        if not util.is_map(a):
+            raise Exception('property must be a map')
+        self._properties = util.rec_decode(a)
+        return self

@@ -34,7 +34,7 @@ def mainFunc(argproc=None, glproc=None, aggrparams=None, fcpostproc=None,
 
     gl = GeoJSONLoader(timestamp=util.dt2ts(datetime.now()))
     if glproc is not None:
-        glproc(gl)
+        glproc(gl, args)
 
     fc = FeatureCollection()
     if len(args.input) == 0:
@@ -51,10 +51,10 @@ def mainFunc(argproc=None, glproc=None, aggrparams=None, fcpostproc=None,
 
     if fpostproc is not None:
         for f in fc:
-            f = fpostproc(f)
+            fpostproc(f, args)
 
     if fcpostproc is not None:
-        fc = fcpostproc(fc)
+        fcpostproc(fc, args)
 
     if args.out is None:
         sys.stdout.write(json.dumps(fc.dump(encoding=args.encode),

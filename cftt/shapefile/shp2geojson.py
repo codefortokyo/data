@@ -9,7 +9,7 @@ from shapeloader import ShapeLoader
 from .. feature.featurecollection import FeatureCollection
 
 
-def mainFunc(argparams=None, slparams=None, aggrparams=None, postproc=None):
+def mainFunc(argparams=None, slproc=None, aggrparams=None, postproc=None):
     import argparse
 
     parser = argparse.ArgumentParser(description='shape files to geojson.')
@@ -28,8 +28,8 @@ def mainFunc(argparams=None, slparams=None, aggrparams=None, postproc=None):
     args = parser.parse_args()
 
     sl = ShapeLoader(timestamp=util.dt2ts(datetime.now()))
-    if slparams is not None:
-        sl.attr(slparams(args))
+    if slproc is not None:
+        slproc(sl, args)
 
     fc = FeatureCollection(*map(lambda x: sl(x), args.input))
     if args.aggr:

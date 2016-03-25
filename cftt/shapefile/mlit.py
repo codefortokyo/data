@@ -37,7 +37,7 @@ def _argparams(parser):
     return parser
 
 
-def _slparams(args):
+def _slproc(sl, args):
     ret = {
         'note': '国土交通省国土政策局「国土数値情報{0}」をもとに{1}が編集・加工'.format(
                 (lambda x: '' if x is None else ' ('+x+')')(args.dataname),
@@ -47,7 +47,8 @@ def _slparams(args):
     }
     if args.pub is not None:
         ret['publish-date'] = args.pub
-    return ret
+    sl.attr(ret)
+    return sl
 
 
 def _aggrparams(args):

@@ -17,6 +17,7 @@ from .. common import util
 from .. feature.feature import Feature
 from .. feature.featurecollection import FeatureCollection
 from .. common import base
+from .. common.reopenabletempfile import ReopenableTempFile
 
 
 class ShapeLoader(collections.Callable, base.BaseAttribute):
@@ -95,7 +96,7 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
 
         :param url: url to the zipped ShapeLoader.
         """
-        with util.ReopenableTempFile(suffix='.zip') as tmp:
+        with ReopenableTempFile(suffix='.zip') as tmp:
             self.attr('original-url', url)
             resource = urllib2.urlopen(url)
             tmp.write(resource.read())

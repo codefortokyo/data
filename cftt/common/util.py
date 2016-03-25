@@ -173,19 +173,21 @@ def is_url(x):
 def rec_apply(f, x, condition=const(True), is_map=is_map,
               is_array=is_array, apply_to_key=True,
               default_map=dict, default_array=list):
-    """Return
-    xに対して再帰的にfを適用する。conditionで適用するかどうかの判定ができる。
+    """Return the same structured data of x but each element is applied f.
+    condition is used to check if f should be applied to x. is_map and is_array
+    are used to decide if x is container or not. apply_to_key is a flag to
+    control if f is applied to the keys of the mapping objects. default_map and
+    default_array is used to reconstruct the same structure if the
+    reconstruction is failed.
 
-    :param f: 一つの引数を取る関数
-    :param x: 任意のオブジェクト
-    :param condition: 一つの引数を取り、真偽値を返す関数
-    :param is_map: 辞書系オブジェクトかどうか判定する関数
-    :param is_array: イテレータオブジェクトかどうか判定する
-    :param apply_to_key: 辞書系オブジェクトのkeyにも関数を適用するかどうかの真偽値
-    :param default_map: 辞書系オブジェクトを構築する際に、元の型が維持できなかった場合に
-        用いられる辞書系オブジェクトのコンストラクタ
-    :param default_array: リスト系オブジェクトを構築する際に、元の型が維持できなかった場合に
-        用いられるリストオブジェクトのコンストラクタ
+    :param f: one-argument function
+    :param x: object
+    :param condition: one-argument function
+    :param is_map: one-argument function
+    :param is_array: one-argument function
+    :param apply_to_key: one-argument function
+    :param default_map: class object of inherit class of mapping
+    :param default_array: class object of inherit class of iterable container
     """
     def g(y):
         if is_map(y):

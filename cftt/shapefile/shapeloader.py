@@ -58,7 +58,7 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
             a['crs'] = to_string(f.crs)
         except:
             pass
-        for k, v in self._attributes.items():
+        for k, v in self.attributes:
             if util.is_callable(v):
                 a[k] = v(f)
             else:

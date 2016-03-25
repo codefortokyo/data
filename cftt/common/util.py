@@ -146,24 +146,24 @@ def cons_map(data, c, default_map=dict):
 
 
 def dt2ts(dt):
-    """datetime型をtimestampに変換する
+    """Return timestamp (int) of dt.
 
-    :param dt: datetime型
+    :param dt: datetime
     """
     return int(time.mktime(dt.timetuple()) * 1000) + (dt.microsecond / 1000)
 
 
 def ts2dt(ts):
-    """整数で表されたtimestampをdatetime型に変換する
+    """Return datetime of ts
 
-    :param ts: 整数
+    :param ts: int
     """
     return datetime.fromtimestamp(
         int(ts) / 1000).replace(microsecond=int(ts) % 1000 * 1000)
 
 
 def is_url(x):
-    """xがURLのパターンにマッチすればTrue、そうでなければFalseを返す
+    """Return if x matches URL expression.
 
     :param x: basestring
     """

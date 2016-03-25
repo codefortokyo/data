@@ -17,6 +17,7 @@ from .. common import util
 from .. feature.feature import Feature
 from .. feature.featurecollection import FeatureCollection
 from .. common import base
+from .. common.reopenabletempfile import ReopenableTempFile
 
 
 class ShapeLoader(collections.Callable, base.BaseAttribute):
@@ -58,7 +59,7 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
             a['crs'] = to_string(f.crs)
         except:
             pass
-        for k, v in self._attributes.items():
+        for k, v in self.attributes:
             if util.is_callable(v):
                 a[k] = v(f)
             else:
@@ -85,20 +86,17 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
                 names = filter(
                     lambda x: re.match('.*\.shp$', x, flags=re.IGNORECASE),
                     z.namelist())
-                if len(names) == 0:
-                    warnings.warn('no shape file found')
-                    return self
-                if len(names) > 1:
-                    warnings.warn('multiple shape files found: load ' +
-                                  names[0] + ' only.')
-                return self._load_from_zip(zip, names[0])
+                res = FeatureCollection()
+                for name in names:
+                    res += _load_from_zip(zip, name)
+                return res
 
     def _load_from_url(self, url):
         """Load the zipped shape file from url. Return FeatureCollection.
 
         :param url: url to the zipped ShapeLoader.
         """
-        with util.ReopenableTempFile(suffix='.zip') as tmp:
+        with ReopenableTempFile(suffix='.zip') as tmp:
             self.attr('original-url', url)
             resource = urllib2.urlopen(url)
             tmp.write(resource.read())

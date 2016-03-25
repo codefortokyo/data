@@ -5,42 +5,56 @@ import json
 from datetime import datetime
 
 from .. common import util
-from shapeloader import ShapeLoader
 from .. feature.featurecollection import FeatureCollection
+from geojsonloader import GeoJSONLoader
 
 
-def mainFunc(argparams=None, slproc=None, aggrparams=None, postproc=None):
+def mainFunc(argproc=None, glproc=None, aggrparams=None, fcpostproc=None,
+             fpostproc=None):
     import argparse
 
-    parser = argparse.ArgumentParser(description='shape files to geojson.')
-    parser.add_argument('input', nargs='+',
-                        help='path to shape file or zip file, URL to zip file')
+    parser = argparse.ArgumentParser(description='geojson manipulation.')
+    parser.add_argument(
+        'input', nargs='*',
+        help='''path to geojson file or zip file, URL to resources.
+        (default: stdin)'''
+    )
     parser.add_argument('-e', '--encode', action='store', dest='encode',
-                        help='encoding (default: utf-8)', default='utf-8')
+                        help='output encoding (default: utf-8)',
+                        default='utf-8')
     parser.add_argument('-o', '--output', action='store', dest='out',
                         help='output file name (default: stdout)')
     parser.add_argument('-a', '--aggregate', action='store_true', dest='aggr',
                         help='aggregate the output (default: False)')
 
-    if argparams is not None:
-        argparams(parser)
+    if argproc is not None:
+        argproc(parser)
 
     args = parser.parse_args()
 
-    sl = ShapeLoader(timestamp=util.dt2ts(datetime.now()))
-    if slproc is not None:
-        slproc(sl, args)
+    gl = GeoJSONLoader(timestamp=util.dt2ts(datetime.now()))
+    if glproc is not None:
+        glproc(gl, args)
 
-    fc = FeatureCollection(*map(lambda x: sl(x), args.input))
+    fc = FeatureCollection()
+    if len(args.input) == 0:
+        fc = gl(sys.stdin)
+    else:
+        for i in args.input:
+            fc += gl(i)
+
     if args.aggr:
         if aggrparams is not None:
             fc = fc.aggregate(**aggrparams(args))
         else:
             fc = fc.aggregate()
 
-    if postproc is not None:
+    if fpostproc is not None:
         for f in fc:
-            f = postproc(f)
+            fpostproc(f, args)
+
+    if fcpostproc is not None:
+        fcpostproc(fc, args)
 
     if args.out is None:
         sys.stdout.write(json.dumps(fc.dump(encoding=args.encode),

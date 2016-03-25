@@ -10,6 +10,7 @@ import urllib2
 from .. common import base
 from .. common import util
 from .. feature.featurecollection import FeatureCollection
+from .. common.reopenabletempfile import ReopenableTempFile
 
 
 class GeoJSONLoader(collections.Callable, base.BaseAttribute):
@@ -82,7 +83,7 @@ class GeoJSONLoader(collections.Callable, base.BaseAttribute):
 
         :param x: string
         """
-        with util.ReopenableTempFile() as tmp:
+        with ReopenableTempFile() as tmp:
             self.attr('original-url', x)
             resource = urllib2.urlopen(x)
             tmp.write(resource.read())

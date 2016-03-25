@@ -4,7 +4,6 @@ import sys
 import os
 import collections
 import tempfile
-
 from datetime import datetime
 import time
 import re
@@ -147,24 +146,24 @@ def cons_map(data, c, default_map=dict):
 
 
 def dt2ts(dt):
-    """datetime型をtimestampに変換する
+    """Return timestamp (int) of dt.
 
-    :param dt: datetime型
+    :param dt: datetime
     """
     return int(time.mktime(dt.timetuple()) * 1000) + (dt.microsecond / 1000)
 
 
 def ts2dt(ts):
-    """整数で表されたtimestampをdatetime型に変換する
+    """Return datetime of ts
 
-    :param ts: 整数
+    :param ts: int
     """
     return datetime.fromtimestamp(
         int(ts) / 1000).replace(microsecond=int(ts) % 1000 * 1000)
 
 
 def is_url(x):
-    """xがURLのパターンにマッチすればTrue、そうでなければFalseを返す
+    """Return if x matches URL expression.
 
     :param x: basestring
     """
@@ -174,19 +173,21 @@ def is_url(x):
 def rec_apply(f, x, condition=const(True), is_map=is_map,
               is_array=is_array, apply_to_key=True,
               default_map=dict, default_array=list):
-    """Return
-    xに対して再帰的にfを適用する。conditionで適用するかどうかの判定ができる。
+    """Return the same structured data of x but each element is applied f.
+    condition is used to check if f should be applied to x. is_map and is_array
+    are used to decide if x is container or not. apply_to_key is a flag to
+    control if f is applied to the keys of the mapping objects. default_map and
+    default_array is used to reconstruct the same structure if the
+    reconstruction is failed.
 
-    :param f: 一つの引数を取る関数
-    :param x: 任意のオブジェクト
-    :param condition: 一つの引数を取り、真偽値を返す関数
-    :param is_map: 辞書系オブジェクトかどうか判定する関数
-    :param is_array: イテレータオブジェクトかどうか判定する
-    :param apply_to_key: 辞書系オブジェクトのkeyにも関数を適用するかどうかの真偽値
-    :param default_map: 辞書系オブジェクトを構築する際に、元の型が維持できなかった場合に
-        用いられる辞書系オブジェクトのコンストラクタ
-    :param default_array: リスト系オブジェクトを構築する際に、元の型が維持できなかった場合に
-        用いられるリストオブジェクトのコンストラクタ
+    :param f: one-argument function
+    :param x: object
+    :param condition: one-argument function
+    :param is_map: one-argument function
+    :param is_array: one-argument function
+    :param apply_to_key: one-argument function
+    :param default_map: class object of inherit class of mapping
+    :param default_array: class object of inherit class of iterable container
     """
     def g(y):
         if is_map(y):
@@ -234,7 +235,7 @@ def rec_str2dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
             return datetime.strptime(y, timeFormat)
         except:
             return y
-    return rec_apply(f, x, condition=is_string)
+    return rec_apply(f, x, condition=is_string, apply_to_key=False)
 
 
 def rec_dt2str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
@@ -244,137 +245,5 @@ def rec_dt2str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
     :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
     """
     return rec_apply(lambda y: y.strftime(timeFormat), x,
-                     condition=lambda y: isinstance(y, datetime))
-
-
-class ReopenableTempFile(object):
-    _known_options = set(('mode', 'bufsize', 'suffix', 'prefix', 'dir'))
-
-    def __init__(self, **kwargs):
-        self._attributes = {}
-        self._file = None
-        self.attr(kwargs)
-
-    def attr(self, *x):
-        """set/get attributes.
-
-        attr('id'): Return value of 'id'
-
-        attr('id', 'a123'): set value of 'id' to 'a123' then return self
-
-        :param x: single key, list, dict, set, tuple or key-value pair
-        """
-        if len(x) == 0:
-            return self
-        if len(x) == 1:
-            if is_map(x[0]):
-                for k, v in rec_decode(x[0]).items():
-                    self.attr(k, v)
-                return self
-            if isinstance(x[0], collections.Set):
-                return {k: self.attr(k) for k in rec_decode(x[0])}
-            if is_array(x[0]):
-                return cons_array(
-                    (self.attr(k) for k in rec_decode(x[0])),
-                    x[0].__class__, tuple)
-            k = safe_decode(x[0])
-            if not is_string(x[0]):
-                k = unicode(x[0])
-            if k in self._attributes:
-                return self._attributes[k]
-            return None
-        k = safe_decode(x[0])
-        if not is_string(x[0]):
-            k = unicode(x[0])
-        v = rec_decode(x[1])
-        if v is None:
-            if k in self._attributes:
-                del self._attributes[k]
-            return self
-        if k not in self.__class__._known_options:
-            raise Exception('cannot set ' + k + ' of ReopenableTempFile.')
-        self._attributes[k] = v
-        return self
-
-    def __enter__(self):
-        self._file = tempfile.NamedTemporaryFile(delete=False,
-                                                 **self._attributes)
-        return self._file
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self._file.close()
-        os.remove(self._file.name)
-
-    @property
-    def file(self):
-        if self._file is None:
-            return None
-        return self._file.file
-
-    def close(self):
-        if self._file is not None:
-            return self._file.close()
-
-    def flush(self):
-        if self._file is not None:
-            return self._file.flush()
-
-    def fileno(self):
-        if self._file is not None:
-            return self._file.fileno()
-
-    def next(self):
-        if self._file is not None:
-            return self._file.next()
-
-    def read(self, *args, **kwargs):
-        if self._file is not None:
-            return self._file.read(*args, **kwargs)
-
-    def readline(self, *args, **kwargs):
-        if self._file is not None:
-            return self._file.readline(*args, **kwargs)
-
-    def readlines(self, *args, **kwargs):
-        if self._file is not None:
-            return self._file.readlines(*args, **kwargs)
-
-    def seek(self, *args, **kwargs):
-        if self._file is not None:
-            return self._file.seek(*args, **kwargs)
-
-    def tell(self):
-        if self._file is not None:
-            return self._file.tell()
-
-    def truncate(self, *args, **kwargs):
-        if self._file is not None:
-            return self._file.truncate(*args, **kwargs)
-
-    def write(self, *args, **kwargs):
-        if self._file is not None:
-            return self._file.write(*args, **kwargs)
-
-    def writelines(self, *args, **kwargs):
-        if self._file is not None:
-            return self._file.writelines(*args, **kwargs)
-
-    @property
-    def closed(self):
-        if self._file is not None:
-            return self._file.closed
-
-    @property
-    def encoding(self):
-        if self._file is not None:
-            return self._file.encoding
-
-    @property
-    def mode(self):
-        if self._file is not None:
-            return self._file.mode
-
-    @property
-    def name(self):
-        if self._file is not None:
-            return self._file.name
+                     condition=lambda y: isinstance(y, datetime),
+                     apply_to_key=False)

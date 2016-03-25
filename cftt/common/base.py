@@ -92,6 +92,13 @@ class BaseAttribute(object):
         self._attributes = util.rec_decode(a)
         return self
 
+    @attributes.deleter
+    def attributes(self):
+        """Clear current attributes. Return self.
+        """
+        self._attributes.clear()
+        return self
+
 
 class BaseProperty(object):
     def __init__(self, **kwargs):
@@ -178,4 +185,11 @@ class BaseProperty(object):
         if not util.is_map(a):
             raise Exception('property must be a map')
         self._properties = util.rec_decode(a)
+        return self
+
+    @properties.deleter
+    def propeties(self):
+        """Clear current properties. Return self.
+        """
+        self._properties.clear()
         return self

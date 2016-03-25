@@ -235,7 +235,7 @@ def rec_str2dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
             return datetime.strptime(y, timeFormat)
         except:
             return y
-    return rec_apply(f, x, condition=is_string)
+    return rec_apply(f, x, condition=is_string, apply_to_key=False)
 
 
 def rec_dt2str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
@@ -245,4 +245,5 @@ def rec_dt2str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
     :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
     """
     return rec_apply(lambda y: y.strftime(timeFormat), x,
-                     condition=lambda y: isinstance(y, datetime))
+                     condition=lambda y: isinstance(y, datetime),
+                     apply_to_key=False)

@@ -108,6 +108,50 @@ class Tester(unittest.TestCase):
         self.assertFalse(util.is_url('data.x'))
         self.assertTrue(util.is_url('http://192.168.0.1:8000'))
 
+    def test_rec_apply(self):
+        res = util.rec_apply(int, ['1', {'a': '2'}],
+                             condition=lambda x: isinstance(x, basestring),
+                             apply_to_key=False)
+        self.assertTrue(isinstance(res[0], int))
+        self.assertTrue(isinstance(res[1]['a'], int))
+        self.assertTrue(isinstance(res, list))
+        self.assertTrue(isinstance(res[1], dict))
+
+    def test_rec_decode(self):
+        res = util.rec_decode(['a', u'b', 'あ', 'い'.decode('utf-8'), 1])
+        self.assertTrue(all(map(lambda x: isinstance(x, unicode), res[:4])))
+        self.assertTrue(isinstance(res[4], int))
+
+    def test_rec_encode(self):
+        res = util.rec_encode(['a', u'b', 'あ', 'い'.decode('utf-8'), 1])
+        self.assertTrue(all(map(lambda x: isinstance(x, str), res[:4])))
+        self.assertTrue(isinstance(res[4], int))
+
+    def test_rec_str2dt(self):
+        from datetime import datetime
+        res = util.rec_str2dt(['2016/03/25 19:09:32',
+                               {'a': '2016/03/25 19:09:32'},
+                               'non-datetime string',
+                               u'2016/03/25 19:09:32'])
+        self.assertTrue(isinstance(res[0], datetime))
+        self.assertTrue(isinstance(res[1]['a'], datetime))
+        self.assertTrue(isinstance(res[2], str))
+        self.assertTrue(isinstance(res[3], datetime))
+
+    def test_rec_dt2str(self):
+        from datetime import datetime
+        res = util.rec_dt2str([datetime.strptime('2016/03/25 19:09:32',
+                                                 '%Y/%m/%d %H:%M:%S'),
+                               {'a': '2016/03/25 19:09:32',
+                                'b': datetime.now()},
+                               123,
+                               u'string'])
+        self.assertTrue(isinstance(res[0], basestring))
+        self.assertTrue(isinstance(res[1]['a'], basestring))
+        self.assertTrue(isinstance(res[1]['b'], basestring))
+        self.assertTrue(isinstance(res[2], int))
+        self.assertTrue(isinstance(res[3], basestring))
+
 
 if __name__ == '__main__':
     unittest.main()

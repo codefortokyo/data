@@ -85,13 +85,10 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
                 names = filter(
                     lambda x: re.match('.*\.shp$', x, flags=re.IGNORECASE),
                     z.namelist())
-                if len(names) == 0:
-                    warnings.warn('no shape file found')
-                    return self
-                if len(names) > 1:
-                    warnings.warn('multiple shape files found: load ' +
-                                  names[0] + ' only.')
-                return self._load_from_zip(zip, names[0])
+                res = FeatureCollection()
+                for name in names:
+                    res += _load_from_zip(zip, name)
+                return res
 
     def _load_from_url(self, url):
         """Load the zipped shape file from url. Return FeatureCollection.

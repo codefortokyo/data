@@ -195,6 +195,23 @@ class DecodedDictTester(unittest.TestCase):
         self.assertNotEqual(i1, i2)
         self.assertRaises(KeyError, test.popitem)
 
+    def test_setdefault(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 'エイ'))))
+        decoded1 = 'あ'.decode('utf-8')
+        decoded2 = 'エイ'.decode('utf-8')
+        self.assertEqual(decoded2, test._elements[u'a'])
+        self.assertEqual(decoded2, test.setdefault('a'))
+        self.assertEqual(1, test._elements[decoded1])
+        self.assertEqual(1, test.setdefault(decoded1))
+        self.assertEqual(1, test.setdefault('あ'))
+        self.assertEqual(2, test.setdefault('x', 2))
+        self.assertEqual(2, test._elements[u'x'])
+        self.assertEqual([3, 3, 3], test.setdefault(['x', 'y', 'z'], 3))
+        self.assertEqual(3, test._elements['z'])
+        self.assertIsNone(test.setdefault('w'))
+        print test
+
 
 class BaseAttributeTester(unittest.TestCase):
 

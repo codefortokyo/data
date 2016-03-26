@@ -116,6 +116,12 @@ class _DecodedDict(collections.MutableMapping):
             return ret
         return default
 
+    def setdefault(self, key, default=None):
+        if self.__contains__(key):
+            return self[key]
+        self[key] = default
+        return self[key]
+
     def dump(self, encoding=None):
         if encoding is not None:
             return util.rec_encode(dict(self.items()), encoding)

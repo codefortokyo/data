@@ -184,6 +184,17 @@ class DecodedDictTester(unittest.TestCase):
         test1.clear()
         self.assertEqual(test1._elements, test2._elements)
 
+    def test_popitem(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 'エイ'))))
+        self.assertEqual(len(test._elements), 2)
+        i1 = test.popitem()
+        self.assertEqual(len(test._elements), 1)
+        i2 = test.popitem()
+        self.assertEqual(len(test._elements), 0)
+        self.assertNotEqual(i1, i2)
+        self.assertRaises(KeyError, test.popitem)
+
 
 class BaseAttributeTester(unittest.TestCase):
 

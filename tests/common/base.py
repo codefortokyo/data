@@ -312,5 +312,107 @@ class BaseAttributeTester(unittest.TestCase):
         self.assertEqual(test.attributes,
                          dict())
 
+
+class BasePropertyTester(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def test__init__(self):
+        from cftt.common.base import BaseProperty
+        test = BaseProperty()
+        self.assertEqual(len(test._properties), 0)
+        test = BaseProperty(aa=123, bb=234)
+        self.assertEqual(len(test._properties), 2)
+        self.assertEqual(test._properties['aa'], 123)
+        self.assertEqual(test._properties['bb'], 234)
+
+    def test_property(self):
+        from cftt.common.base import BaseProperty
+        test = BaseProperty()
+        test.property('id', 'a123')
+        self.assertEqual(test._properties, test.property())
+        self.assertEqual(test.property('id'), test._properties['id'])
+        self.assertEqual(test.property('id'), 'a123')
+        test.property({'id2': 'b234', 'id3': 345})
+        self.assertEqual(test._properties, test.property())
+        self.assertEqual(test.property('id2'), 'b234')
+        self.assertEqual(test.property('id3'), 345)
+        test.property('id', None)
+        self.assertNotIn('id', test._properties)
+        self.assertEqual([345, 'b234', 345],
+                         test.property(['id3', 'id2', 'id3']))
+        self.assertEqual({'id2': 'b234', 'id3': 345},
+                         test.property(set(('id2', 'id3'))))
+        test.property('日本語', '日本語')
+        decoded = '日本語'.decode('utf-8')
+        self.assertIn(decoded, test._properties)
+        self.assertEqual(test.property(decoded), decoded)
+        self.assertEqual(test.property('日本語'), decoded)
+        self.assertIsNone(test.property('id'))
+        test.property((1, 2), '日本語')
+
+    def test_clear_properties(self):
+        from cftt.common.base import BaseProperty
+        test = BaseProperty(aa=123, bb=234)
+        self.assertEqual(test._properties, {'aa': 123, 'bb': 234})
+        test.clear_properties()
+        self.assertNotEqual(test._properties, {'aa': 123, 'bb': 234})
+        self.assertNotEqual(test._properties, {u'aa': 123, u'bb': 234})
+        self.assertEqual(test._properties, {})
+
+    def test_property_keys(self):
+        from cftt.common.base import BaseProperty
+        test = BaseProperty(aa=123, bb=234)
+        self.assertEqual(set(test.property_keys()), set([u'aa', u'bb']))
+        test.property_keys()[0] = u'xx'
+        self.assertEqual(set(test.property_keys()), set([u'aa', u'bb']))
+
+    def test_property_values(self):
+        from cftt.common.base import BaseProperty
+        test = BaseProperty(aa=123, bb=234)
+        self.assertEqual(set(test.property_values()), set([123, 234]))
+        test.property_values()[0] = u'xx'
+        self.assertEqual(set(test.property_values()), set([123, 234]))
+
+    def test_property_items(self):
+        from cftt.common.base import BaseProperty
+        test = BaseProperty(aa=123, bb=234)
+        self.assertEqual(set(test.property_items()),
+                         set(((u'aa', 123), (u'bb', 234))))
+        test.property_items()[0] = ('a', u'xx')
+        self.assertEqual(set(test.property_items()),
+                         set(((u'aa', 123), (u'bb', 234))))
+
+    def test_properties_getter(self):
+        from cftt.common.base import BaseProperty
+        test = BaseProperty(aa=123, bb=234)
+        self.assertEqual(test.properties,
+                         dict(((u'aa', 123), (u'bb', 234))))
+        test.properties['aa'] = 'あ'
+        self.assertEqual(test.properties,
+                         dict(((u'aa', 'あ'.decode('utf-8')), (u'bb', 234))))
+
+    def test_properties_setter(self):
+        from cftt.common.base import BaseProperty
+        test = BaseProperty(aa=123, bb=234)
+        self.assertEqual(test.properties,
+                         dict(((u'aa', 123), (u'bb', 234))))
+        test.properties = ((1, 2), (3, 4))
+        self.assertEqual(test.properties,
+                         dict(((u'1', 2), (u'3', 4))))
+        with self.assertRaises(ValueError):
+            test.properties = 'aaa'
+
+    def test_properties_deleter(self):
+        from cftt.common.base import BaseProperty
+        test = BaseProperty(aa=123, bb=234)
+        self.assertEqual(test.properties,
+                         dict(((u'aa', 123), (u'bb', 234))))
+        del test.properties
+        self.assertEqual(test.properties,
+                         dict())
+
+
 if __name__ == '__main__':
     unittest.main()

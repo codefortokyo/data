@@ -168,6 +168,22 @@ class DecodedDictTester(unittest.TestCase):
         self.assertEqual(test.get('a'), test['a'])
         self.assertNotEqual(test.get('x', 0), test['x'])
 
+    def test_update(self):
+        from cftt.common.base import _DecodedDict
+        test1 = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        test2 = _DecodedDict()
+        self.assertNotEqual(test1._elements, test2._elements)
+        test2.update(test1)
+        self.assertEqual(test1._elements, test2._elements)
+
+    def test_clear(self):
+        from cftt.common.base import _DecodedDict
+        test1 = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        test2 = _DecodedDict()
+        self.assertNotEqual(test1._elements, test2._elements)
+        test1.clear()
+        self.assertEqual(test1._elements, test2._elements)
+
 
 class BaseAttributeTester(unittest.TestCase):
 

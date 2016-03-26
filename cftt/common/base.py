@@ -2,6 +2,7 @@
 
 import collections
 import __builtin__
+import copy
 
 import util
 
@@ -30,7 +31,7 @@ class _DecodedDict(collections.MutableMapping):
         else:
             k = unicode(key)
         if k in self._elements:
-            return self._elements[k]
+            return copy.deepcopy(self._elements[k])
         return None
 
     def __setitem__(self, key, value):
@@ -82,6 +83,43 @@ class _DecodedDict(collections.MutableMapping):
             return self.__getitem__(x[0])
         self.__setitem__(x[0], x[1])
         return self
+
+    def __contains__(self, x):
+        if util.is_map(x):
+            return all((self.__contains__(v) for v in x.values()))
+        if util.is_array(x):
+            return all((self.__contains__(v) for v in x))
+        if util.is_string(x):
+            k = util.safe_decode(x)
+        else:
+            k = unicode(x)
+        return k in self._elements
+
+    def __str__(self):
+        return self._elements.__str__()
+
+    def __eq__(self, other):
+        return self._elements.__eq__(_DecodedDict(other)._elements)
+
+    def __ne__(self, other):
+        return not self._elements.__eq__(_DecodedDict(other)._elements)
+
+    def get(self, key, default=None):
+        if self.__contains__(key):
+            return self.__getitem__(key)
+        return default
+
+    def pop(self, key, default=None):
+        if self.__contains__(key):
+            ret = self.__getitem__(key)
+            self.__delitem__(key)
+            return ret
+        return default
+
+    def dump(self, encoding=None):
+        if encoding is not None:
+            return util.rec_encode(dict(self.items()), encoding)
+        return dict(self.items())
 
 
 class BaseAttribute(object):

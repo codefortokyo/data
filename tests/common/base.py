@@ -98,6 +98,76 @@ class DecodedDictTester(unittest.TestCase):
         self.assertEqual(test(dict(c=0))._elements, dict(a=1, b='a', c=0))
         self.assertEqual(test(dict(c=None))._elements, dict(a=1, b='a'))
 
+    def test__contains__(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        self.assertTrue('a' in test)
+        self.assertTrue(test.__contains__('a'))
+        self.assertTrue('あ' in test)
+        self.assertFalse('b' in test)
+        self.assertTrue(test.__contains__(('a', 'あ')))
+        self.assertFalse(test.__contains__(('a', 'b')))
+
+    def test__keys(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        decoded = 'あ'.decode('utf-8')
+        self.assertEqual(set(test.keys()), set((decoded, 'a')))
+        del test['あ']
+        self.assertEqual(set(test.keys()), set(('a',)))
+        test.keys()[0] = 0
+        self.assertEqual(test._elements, {'a': 2})
+
+    def test_values(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        decoded = 'あ'.decode('utf-8')
+        self.assertEqual(set(test.values()), set((1, 2)))
+        del test['あ']
+        self.assertEqual(set(test.values()), set((2,)))
+        test.values()[0] = 0
+        self.assertEqual(test._elements, {'a': 2})
+
+    def test_items(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        decoded = 'あ'.decode('utf-8')
+        self.assertEqual(set(test.items()), set(((decoded, 1), ('a', 2))))
+        del test['あ']
+        self.assertEqual(set(test.items()), set((('a', 2),)))
+        test.items()[0] = ('a', 0)
+        self.assertEqual(test._elements, {'a': 2})
+
+    def test__eq__(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        self.assertTrue(test.__eq__(dict((('あ', 1), ('a', 2)))))
+        self.assertFalse(test.__eq__(dict((('あ', 2), ('a', 2)))))
+        self.assertTrue(test == dict((('あ', 1), ('a', 2))))
+        self.assertFalse(test == dict((('あ', 2), ('a', 2))))
+
+    def test__ne__(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        self.assertFalse(test.__ne__(dict((('あ', 1), ('a', 2)))))
+        self.assertTrue(test.__ne__(dict((('あ', 2), ('a', 2)))))
+        self.assertFalse(test != dict((('あ', 1), ('a', 2))))
+        self.assertTrue(test != dict((('あ', 2), ('a', 2))))
+
+    def test_pop(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        decoded = 'あ'.decode('utf-8')
+        self.assertEqual(test.pop(['a', 'x'], 8), 8)
+        self.assertEqual(test._elements, {decoded: 1, 'a': 2})
+        self.assertEqual(test.pop(['a'], 9), [2])
+
+    def test_get(self):
+        from cftt.common.base import _DecodedDict
+        test = _DecodedDict(dict((('あ', 1), ('a', 2))))
+        self.assertEqual(test.get('a'), test['a'])
+        self.assertNotEqual(test.get('x', 0), test['x'])
+
 
 class BaseAttributeTester(unittest.TestCase):
 
@@ -136,6 +206,9 @@ class BaseAttributeTester(unittest.TestCase):
         self.assertEqual(test.attr(decoded), decoded)
         self.assertEqual(test.attr('日本語'), decoded)
         self.assertIsNone(test.attr('id'))
+        test.attr((1, 2), '日本語')
+        print test._attributes
+        print test.attr((1, 2))
 
     def test_clear_attributes(self):
         from cftt.common.base import BaseAttribute

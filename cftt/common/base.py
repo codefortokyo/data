@@ -1,8 +1,87 @@
 # -*- coding: utf-8 -*-
 
 import collections
+import __builtin__
 
 import util
+
+
+class _DecodedDict(collections.MutableMapping):
+    def __init__(self, *arg, **kwargs):
+        super(_DecodedDict, self).__init__()
+        self._elements = dict()
+        self(dict(*arg, **kwargs))
+
+    def __getitem__(self, key):
+        if util.is_map(key):
+            return util.cons_map(
+                ((k, self.__getitem__(v)) for k, v in key.items()),
+                key.__class__
+            )
+        if isinstance(key, collections.Set):
+            return {k: self.__getitem__(k) for k in util.rec_decode(key)}
+        if util.is_array(key):
+            return util.cons_array(
+                (self.__getitem__(k) for k in key),
+                key.__class__
+            )
+        if util.is_string(key):
+            k = util.safe_decode(key)
+        else:
+            k = unicode(key)
+        if k in self._elements:
+            return self._elements[k]
+        return None
+
+    def __setitem__(self, key, value):
+        if util.is_map(key):
+            return self.__setitem__(key.values(), value)
+        if util.is_array(key):
+            for k in key:
+                self.__setitem__(k, value)
+            return
+        if value is None:
+            self.__delitem__(key)
+            return
+        if util.is_string(key):
+            k = util.safe_decode(key)
+        else:
+            k = unicode(key)
+        self._elements[k] = util.rec_decode(value)
+        return
+
+    def __delitem__(self, key):
+        if util.is_map(key):
+            return self.__delitem__(key.values())
+        if util.is_array(key):
+            for k in key:
+                self.__delitem__(k)
+            return
+        if util.is_string(key):
+            k = util.safe_decode(key)
+        else:
+            k = unicode(key)
+        if k in self._elements:
+            del self._elements[k]
+        return
+
+    def __iter__(self):
+        return self._elements.__iter__()
+
+    def __len__(self):
+        return self._elements.__len__()
+
+    def __call__(self, *x):
+        if len(x) == 0:
+            return self
+        if len(x) == 1:
+            if util.is_map(x[0]):
+                for k, v in x[0].items():
+                    self(k, v)
+                return self
+            return self.__getitem__(x[0])
+        self.__setitem__(x[0], x[1])
+        return self
 
 
 class BaseAttribute(object):
@@ -77,9 +156,7 @@ class BaseAttribute(object):
     def attributes(self):
         """Return a copy of attributes of this instance
         """
-        return util.cons_map(self._attributes.items(),
-                             self._attributes.__class__,
-                             dict)
+        return self.attribute_items()
 
     @attributes.setter
     def attributes(self, x):
@@ -168,7 +245,7 @@ class BaseProperty(object):
                              self._properties.__class__,
                              dict)
 
-    @property
+    @__builtin__.property
     def properties(self):
         """Return a copy of properties of this instance
         """

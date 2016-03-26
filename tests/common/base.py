@@ -210,7 +210,6 @@ class DecodedDictTester(unittest.TestCase):
         self.assertEqual([3, 3, 3], test.setdefault(['x', 'y', 'z'], 3))
         self.assertEqual(3, test._elements['z'])
         self.assertIsNone(test.setdefault('w'))
-        print test
 
 
 class BaseAttributeTester(unittest.TestCase):
@@ -231,11 +230,11 @@ class BaseAttributeTester(unittest.TestCase):
         from cftt.common.base import BaseAttribute
         test = BaseAttribute()
         test.attr('id', 'a123')
-        self.assertEqual(test, test.attr())
+        self.assertEqual(test._attributes, test.attr())
         self.assertEqual(test.attr('id'), test._attributes['id'])
         self.assertEqual(test.attr('id'), 'a123')
         test.attr({'id2': 'b234', 'id3': 345})
-        self.assertEqual(test, test.attr())
+        self.assertEqual(test._attributes, test.attr())
         self.assertEqual(test.attr('id2'), 'b234')
         self.assertEqual(test.attr('id3'), 345)
         test.attr('id', None)
@@ -251,8 +250,6 @@ class BaseAttributeTester(unittest.TestCase):
         self.assertEqual(test.attr('日本語'), decoded)
         self.assertIsNone(test.attr('id'))
         test.attr((1, 2), '日本語')
-        print test._attributes
-        print test.attr((1, 2))
 
     def test_clear_attributes(self):
         from cftt.common.base import BaseAttribute
@@ -280,21 +277,40 @@ class BaseAttributeTester(unittest.TestCase):
     def test_attribute_items(self):
         from cftt.common.base import BaseAttribute
         test = BaseAttribute(aa=123, bb=234)
-        self.assertEqual(test.attribute_items(),
-                         dict(((u'aa', 123), (u'bb', 234))))
-        test.attribute_items()['aa'] = u'xx'
-        self.assertEqual(test.attribute_items(),
-                         dict(((u'aa', 123), (u'bb', 234))))
+        self.assertEqual(set(test.attribute_items()),
+                         set(((u'aa', 123), (u'bb', 234))))
+        test.attribute_items()[0] = ('a', u'xx')
+        self.assertEqual(set(test.attribute_items()),
+                         set(((u'aa', 123), (u'bb', 234))))
 
     def test_attributes_getter(self):
         from cftt.common.base import BaseAttribute
         test = BaseAttribute(aa=123, bb=234)
         self.assertEqual(test.attributes,
                          dict(((u'aa', 123), (u'bb', 234))))
-        test.attributes['aa'] = u'xx'
+        test.attributes['aa'] = 'あ'
+        self.assertEqual(test.attributes,
+                         dict(((u'aa', 'あ'.decode('utf-8')), (u'bb', 234))))
+
+    def test_attributes_setter(self):
+        from cftt.common.base import BaseAttribute
+        test = BaseAttribute(aa=123, bb=234)
         self.assertEqual(test.attributes,
                          dict(((u'aa', 123), (u'bb', 234))))
+        test.attributes = ((1, 2), (3, 4))
+        self.assertEqual(test.attributes,
+                         dict(((u'1', 2), (u'3', 4))))
+        with self.assertRaises(ValueError):
+            test.attributes = 'aaa'
 
+    def test_attributes_deleter(self):
+        from cftt.common.base import BaseAttribute
+        test = BaseAttribute(aa=123, bb=234)
+        self.assertEqual(test.attributes,
+                         dict(((u'aa', 123), (u'bb', 234))))
+        del test.attributes
+        self.assertEqual(test.attributes,
+                         dict())
 
 if __name__ == '__main__':
     unittest.main()

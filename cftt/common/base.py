@@ -129,10 +129,9 @@ class _DecodedDict(collections.MutableMapping):
 
 
 class BaseAttribute(object):
-    def __init__(self, **kwargs):
+    def __init__(self, *x, **kwargs):
         super(BaseAttribute, self).__init__()
-        self._attributes = {}
-        self.attr(kwargs)
+        self._attributes = _DecodedDict(*x, **kwargs)
 
     def attr(self, *x):
         """set/get attributes.
@@ -143,35 +142,7 @@ class BaseAttribute(object):
 
         :param x: single key, list, dict, set, tuple or key-value pair
         """
-        if len(x) == 0:
-            return self
-        if len(x) == 1:
-            if util.is_map(x[0]):
-                for k, v in x[0].items():
-                    self.attr(k, v)
-                return self
-            if isinstance(x[0], collections.Set):
-                return {k: self.attr(k) for k in util.rec_decode(x[0])}
-            if util.is_array(x[0]):
-                return util.cons_array(
-                    (self.attr(k) for k in util.rec_decode(x[0])),
-                    x[0].__class__, tuple)
-            k = util.safe_decode(x[0])
-            if not util.is_string(x[0]):
-                k = unicode(x[0])
-            if k in self._attributes:
-                return self._attributes[k]
-            return None
-        k = util.safe_decode(x[0])
-        if not util.is_string(x[0]):
-            k = unicode(x[0])
-        v = util.rec_decode(x[1])
-        if v is None:
-            if k in self._attributes:
-                del self._attributes[k]
-            return self
-        self._attributes[k] = v
-        return self
+        return self._attributes(*x)
 
     def clear_attributes(self):
         """Clear attributes of this instance then return self.
@@ -192,15 +163,13 @@ class BaseAttribute(object):
     def attribute_items(self):
         """Return list of (key, value) of attributes of this instance
         """
-        return util.cons_map(self._attributes.items(),
-                             self._attributes.__class__,
-                             dict)
+        return self._attributes.items()
 
     @property
     def attributes(self):
         """Return a copy of attributes of this instance
         """
-        return self.attribute_items()
+        return self._attributes
 
     @attributes.setter
     def attributes(self, x):
@@ -208,9 +177,7 @@ class BaseAttribute(object):
 
         :param x: Mapping object
         """
-        if not util.is_map(a):
-            raise Exception('attribute must be a map')
-        self._attributes = util.rec_decode(a)
+        self._attributes = _DecodedDict(x)
         return self
 
     @attributes.deleter

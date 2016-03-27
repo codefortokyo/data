@@ -205,7 +205,10 @@ class BaseProperty(object):
 
         :param x: single key, list, dict, set, tuple or key-value pair
         """
-        return self._properties(*x)
+        ret = self._properties(*x)
+        if ret is self._properties:
+            return self
+        return ret
 
     def clear_properties(self):
         """Clear properties of this instance then return self

@@ -2,6 +2,8 @@
 
 import util
 import base
+import tempfile
+import os
 
 
 class ReopenableTempFile(base.BaseAttribute):

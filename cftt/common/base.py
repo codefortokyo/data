@@ -142,7 +142,10 @@ class BaseAttribute(object):
 
         :param x: single key, list, dict, set, tuple or key-value pair
         """
-        return self._attributes(*x)
+        ret = self._attributes(*x)
+        if ret is self._attributes:
+            return self
+        return ret
 
     def clear_attributes(self):
         """Clear attributes of this instance then return self.

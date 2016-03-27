@@ -1,4 +1,4 @@
-    # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import os
@@ -69,7 +69,7 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
             a['crs'] = to_string(f.crs)
         except:
             pass
-        for k, v in self.attributes:
+        for k, v in self.attributes.items():
             if util.is_callable(v):
                 a[k] = v(f)
             else:
@@ -98,7 +98,7 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
                     z.namelist())
                 res = FeatureCollection()
                 for name in names:
-                    res += _load_from_zip(zip, name)
+                    res += self._load_from_zip(zip, name)
                 return res
 
     def _load_from_url(self, url):

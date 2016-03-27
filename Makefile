@@ -1,6 +1,6 @@
-.PHONY: clean-pyc docs
+.PHONY: clean-pyc docs test
 
-all: clean-pyc docs
+all: clean-pyc docs test
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -10,3 +10,6 @@ clean-pyc:
 docs:
 	sphinx-apidoc -f -o docs/ cftt/
 	$(MAKE) -C docs html
+
+test:
+	find tests -name '*.py' -exec python {} \;

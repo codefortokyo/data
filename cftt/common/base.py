@@ -167,7 +167,7 @@ class BaseAttribute(object):
 
     @property
     def attributes(self):
-        """Return a copy of attributes of this instance
+        """Return attributes of this instance
         """
         return self._attributes
 
@@ -227,7 +227,7 @@ class BaseProperty(object):
 
     @__builtin__.property
     def properties(self):
-        """Return a copy of properties of this instance
+        """Return properties of this instance
         """
         return self._properties
 

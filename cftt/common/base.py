@@ -167,7 +167,7 @@ class BaseAttribute(object):
 
     @property
     def attributes(self):
-        """Return attributes of this instance
+        """Return  attributes of this instance
         """
         return self._attributes
 

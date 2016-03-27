@@ -12,18 +12,26 @@ cftt.geojson.filter module
     :undoc-members:
     :show-inheritance:
 
-cftt.geojson.join module
-------------------------
+cftt.geojson.geojsonloader module
+---------------------------------
 
-.. automodule:: cftt.geojson.join
+.. automodule:: cftt.geojson.geojsonloader
     :members:
     :undoc-members:
     :show-inheritance:
 
-cftt.geojson.manip module
--------------------------
+cftt.geojson.geojsonmanip module
+--------------------------------
 
-.. automodule:: cftt.geojson.manip
+.. automodule:: cftt.geojson.geojsonmanip
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cftt.geojson.join module
+------------------------
+
+.. automodule:: cftt.geojson.join
     :members:
     :undoc-members:
     :show-inheritance:

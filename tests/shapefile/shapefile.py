@@ -3,36 +3,61 @@
 import sys
 import os
 import unittest
+import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from cftt.shapefile import shapeloader
 
-
-class Tester(unittest.TestCase):
+class ShapeLoaderTester(unittest.TestCase):
 
     def setUp(self):
         pass
 
-    def test_ShapeLoader(self):
-        l = shapeloader.ShapeLoader()
-        l.attr('note', '本データの作成に当たっては、ESRIジャパン株式会社の全国市区町村界データを使用しました。本データの著作権はESRIジャパン株式会社に帰属します。')
-        s = l('http://www.esrij.com/cgi-bin/wp/wp-content/uploads/2015/08/japan_ver80.zip')
-        self.assertNotEqual(s, None)
+    def test__init__(self):
+        from cftt.shapefile.shapeloader import ShapeLoader
+        test = ShapeLoader()
+        s = test()
+        self.assertEqual(len(s), 0)
+        self.assertEqual(s.attr(), {})
+        test.attr('note', 'あ')
+        s = test()
+        self.assertEqual(s.attributes, {u'note': 'あ'.decode('utf-8')})
+        test = ShapeLoader(one=1, two=2)
+        s = test({'features': [
+            {'type': 'feature',
+             'properties': {},
+             'geometry': {'type': 'Point', 'coordinates': [0.0, 0.0]}}],
+            'three': 3})
+        self.assertEqual(s.attributes,
+                         {u'one': 1, u'two': 2, u'three': 3})
+        self.assertEqual(len(s), 1)
 
-    def test_Aggregate(self):
-        l = shapeloader.ShapeLoader()
-from cftt.shapefile.shapeloader import ShapeLoader
-l = ShapeLoader()
-s = l('http://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-15/N03-150101_13_GML.zip')
-t = s.aggregate()
-        s = l('http://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-15/N03-150101_13_GML.zip')
-        self.assertNotEqual(s.aggregate(), None)
-
-from cftt.shapefile.shapeloader import ShapeLoader
-l = ShapeLoader()
-s = l('/Users/osoken/Downloads/data/geo/mlit.go.jp/N03-150101_13_GML.zip')
-t = s.aggregate()
+    def test__call__(self):
+        from cftt.shapefile.shapeloader import ShapeLoader
+        id = uuid.uuid4()
+        test = ShapeLoader(id=id)
+        s = test()
+        self.assertEqual(s.attributes['id'], id)
+        self.assertEqual(len(s), 0)
+        self.assertEqual(len(s.attributes), 1)
+        s = test({'features': [
+            {'type': 'feature',
+             'properties': {},
+             'geometry': {'type': 'Point', 'coordinates': [0.0, 0.0]}}],
+            'three': 3})
+        self.assertEqual(s.attributes['id'], id)
+        self.assertEqual(s.attributes,
+                         {u'three': 3, u'id': id})
+        self.assertEqual(len(s), 1)
+        test.attr('two', 2)
+        t = test(s)
+        self.assertEqual(s.attributes['id'], id)
+        self.assertEqual(s.attributes,
+                         {u'three': 3, u'id': id})
+        self.assertEqual(len(s), 1)
+        self.assertEqual(t.attributes,
+                         {u'three': 3, u'id': id, u'two': 2})
+        
 
 
 if __name__ == '__main__':

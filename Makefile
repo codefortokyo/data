@@ -17,19 +17,13 @@ test: test_data/test_uk.zip test_data/shapefile/test_uk.shp
 test_data/test_uk.zip: test_data/worldmill/docs/data/test_uk.shp
 	zip test_data/test_uk.zip test_data/worldmill/docs/data/*
 
-test_data/worldmill/docs/data/test_uk.shp: test_data
-	if [ ! -e test_data/worldmill ]; then \
-		git clone git@github.com:sgillies/worldmill.git test_data/worldmill;\
-	fi;
+test_data/worldmill/docs/data/test_uk.shp:
+	mkdir -p test_data
+	git clone git@github.com:sgillies/worldmill.git test_data/worldmill
 
-test_data/shapefile/test_uk.shp: test_data/shapefile test_data/worldmill/docs/data/test_uk.shp
+test_data/shapefile/test_uk.shp: test_data/worldmill/docs/data/test_uk.shp
+	mkdir -p test_data/shapefile
 	cp test_data/worldmill/docs/data/test_uk.* test_data/shapefile/
-
-test_data/shapefile: test_data
-	mkdir test_data/shapefile
-
-test_data:
-	mkdir test_data
 
 clean:
 	rm -f -r test_data

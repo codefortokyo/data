@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     cftt.common
+    cftt.feature
     cftt.geojson
     cftt.shapefile
 

@@ -142,7 +142,10 @@ class BaseAttribute(object):
 
         :param x: single key, list, dict, set, tuple or key-value pair
         """
-        return self._attributes(*x)
+        ret = self._attributes(*x)
+        if ret is self._attributes:
+            return self
+        return ret
 
     def clear_attributes(self):
         """Clear attributes of this instance then return self.
@@ -167,7 +170,7 @@ class BaseAttribute(object):
 
     @property
     def attributes(self):
-        """Return a copy of attributes of this instance
+        """Return  attributes of this instance
         """
         return self._attributes
 
@@ -202,7 +205,10 @@ class BaseProperty(object):
 
         :param x: single key, list, dict, set, tuple or key-value pair
         """
-        return self._properties(*x)
+        ret = self._properties(*x)
+        if ret is self._properties:
+            return self
+        return ret
 
     def clear_properties(self):
         """Clear properties of this instance then return self
@@ -227,7 +233,7 @@ class BaseProperty(object):
 
     @__builtin__.property
     def properties(self):
-        """Return a copy of properties of this instance
+        """Return properties of this instance
         """
         return self._properties
 

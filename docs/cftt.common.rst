@@ -4,10 +4,18 @@ cftt.common package
 Submodules
 ----------
 
-cftt.common.feature module
---------------------------
+cftt.common.base module
+-----------------------
 
-.. automodule:: cftt.common.feature
+.. automodule:: cftt.common.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cftt.common.reopenabletempfile module
+-------------------------------------
+
+.. automodule:: cftt.common.reopenabletempfile
     :members:
     :undoc-members:
     :show-inheritance:

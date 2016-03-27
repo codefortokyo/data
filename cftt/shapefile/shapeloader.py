@@ -25,17 +25,27 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
         super(ShapeLoader, self).__init__()
         self.attr(kwargs)
 
-    def __call__(self, x):
+    def __call__(self, x=None):
         nonself = ShapeLoader(**self._attributes)
         return nonself._load(x)
+
+    def _aug_attr(self, f):
+        for k, v in self.attributes.items():
+            if util.is_callable(v):
+                f.attributes[k] = v(f)
+            else:
+                f.attributes[k] = v
+        return f
 
     def _load(self, x):
         """Return FeatureCollection. If x is
 
         :param x:
         """
+        if x is None:
+            return self._aug_attr(FeatureCollection())
         if isinstance(x, FeatureCollection):
-            return x
+            return self._aug_attr(FeatureCollection(x))
         elif util.is_string(x):
             if util.is_url(x):
                 return self._load_from_url(x)
@@ -46,7 +56,7 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
             else:
                 raise Exception('Unknown input format')
         elif util.is_map(x):
-            return FeatureCollection(x)
+            return self._aug_attr(FeatureCollection(x))
         raise Exception('Unknown input format')
 
     def _load_from_fiona(self, f):
@@ -59,7 +69,7 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
             a['crs'] = to_string(f.crs)
         except:
             pass
-        for k, v in self.attributes:
+        for k, v in self.attributes.items():
             if util.is_callable(v):
                 a[k] = v(f)
             else:
@@ -88,7 +98,7 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
                     z.namelist())
                 res = FeatureCollection()
                 for name in names:
-                    res += _load_from_zip(zip, name)
+                    res += self._load_from_zip(zip, name)
                 return res
 
     def _load_from_url(self, url):

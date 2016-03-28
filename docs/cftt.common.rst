@@ -4,6 +4,14 @@ cftt.common package
 Submodules
 ----------
 
+cftt.common.asyncfileserver module
+----------------------------------
+
+.. automodule:: cftt.common.asyncfileserver
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cftt.common.base module
 -----------------------
 

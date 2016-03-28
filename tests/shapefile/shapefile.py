@@ -59,13 +59,14 @@ class ShapeLoaderTester(unittest.TestCase):
         self.assertEqual(t.attributes,
                          {u'three': 3, u'id': id, u'two': 2})
         test_data_dir = os.path.join(PROJECT_ROOT, 'test_data')
-        shp = os.path.join(test_data_dir, 'shapefile', 'test_uk.shp')
+        shp = os.path.join(test_data_dir, 'shapefile', 'test_uk',
+                           'test_uk.shp')
         s = test(shp)
         self.assertEqual(len(s), 48)
         t = test._load_from_shp(shp)
         self.assertEqual(s.attributes, t.attributes)
         self.assertEqual(len(s), len(t))
-        zip = os.path.join(test_data_dir, 'test_uk.zip')
+        zip = os.path.join(test_data_dir, 'shapefile', 'test_uk.zip')
         s = test(zip)
         self.assertEqual(len(s), 48)
         t = test._load_from_zip(zip)
@@ -73,7 +74,7 @@ class ShapeLoaderTester(unittest.TestCase):
         self.assertEqual(len(s), len(t))
         from cftt.common.asyncfileserver import AsyncFileServer
         with AsyncFileServer():
-            url = 'http://localhost:8000/test_data/test_uk.zip'
+            url = 'http://localhost:8000/test_data/shapefile/test_uk.zip'
             s = test(url)
             self.assertEqual(len(s), 48)
             t = test._load_from_url(url)

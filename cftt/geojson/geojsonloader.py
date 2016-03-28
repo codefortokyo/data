@@ -18,8 +18,8 @@ class GeoJSONLoader(collections.Callable, base.BaseAttribute):
         super(GeoJSONLoader, self).__init__()
         self.attr(kwargs)
 
-    def __call__(self, x):
-        nonself = GeoJSONLoader(**self.attribute_items())
+    def __call__(self, x=None):
+        nonself = GeoJSONLoader(**self.attributes)
         return nonself._load(x)
 
     def _load(self, x):
@@ -33,9 +33,9 @@ class GeoJSONLoader(collections.Callable, base.BaseAttribute):
         :param x:
         """
         if x is None:
-            return FeatureCollection()
+            return FeatureCollection().attr(self.attributes)
         if isinstance(x, FeatureCollection):
-            return x
+            return FeatureCollection(x).attr(self.attributes)
         if util.is_string(x):
             if util.is_url(x):
                 return self._load_from_url(x)
@@ -60,7 +60,7 @@ class GeoJSONLoader(collections.Callable, base.BaseAttribute):
 
         :param x: mapping object
         """
-        return FeatureCollection(x).attr(self.attribute_items())
+        return FeatureCollection(x).attr(self.attributes)
 
     def _load_from_string(self, x):
         """Load from JSON-formatted string. Return FeatureCollection.
@@ -89,7 +89,7 @@ class GeoJSONLoader(collections.Callable, base.BaseAttribute):
             tmp.write(resource.read())
             tmp.close()
             if zipfile.is_zipfile(tmp.name):
-                return self._load_from_zip_file(tmp.name)
+                return self._load_from_zip_file(tmp.name).attr('zip-name', x)
             return self._load_from_json_file(tmp.name)
 
     def _load_from_directory(self, x):

@@ -4,6 +4,7 @@ import sys
 import os
 import unittest
 import uuid
+import warnings
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
@@ -72,13 +73,18 @@ class GeoJSONLoaderTester(unittest.TestCase):
         self.assertEqual(s.attributes, t.attributes)
         self.assertEqual(len(s), len(t))
         from cftt.common.asyncfileserver import AsyncFileServer
-        with AsyncFileServer(port=8001):
-            url = 'http://localhost:8001/test_data/geojson/japan.zip'
-            s = test(url)
-            self.assertEqual(len(s), 47)
-            t = test._load_from_url(url)
-            self.assertEqual(s.attributes, t.attributes)
-            self.assertEqual(len(s), len(t))
+        with AsyncFileServer(portMin=8000) as srv:
+            if srv.port is None:
+                warnings.warn('localhost not available: ' +
+                              'skipping _load_from_url test.')
+            else:
+                url = ('http://localhost:' + str(srv.port) +
+                       '/test_data/geojson/japan.zip')
+                s = test(url)
+                self.assertEqual(len(s), 47)
+                t = test._load_from_url(url)
+                self.assertEqual(s.attributes, t.attributes)
+                self.assertEqual(len(s), len(t))
 
 
 if __name__ == '__main__':

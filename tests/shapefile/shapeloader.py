@@ -73,13 +73,18 @@ class ShapeLoaderTester(unittest.TestCase):
         self.assertEqual(s.attributes, t.attributes)
         self.assertEqual(len(s), len(t))
         from cftt.common.asyncfileserver import AsyncFileServer
-        with AsyncFileServer():
-            url = 'http://localhost:8000/test_data/shapefile/test_uk.zip'
-            s = test(url)
-            self.assertEqual(len(s), 48)
-            t = test._load_from_url(url)
-            self.assertEqual(s.attributes, t.attributes)
-            self.assertEqual(len(s), len(t))
+        with AsyncFileServer(portMin=8000) as srv:
+            if srv.port is None:
+                warnings.warn('localhost not available: ' +
+                              'skipping _load_from_url test.')
+            else:
+                url = ('http://localhost:' + str(srv.port) +
+                       '/test_data/shapefile/test_uk.zip')
+                s = test(url)
+                self.assertEqual(len(s), 48)
+                t = test._load_from_url(url)
+                self.assertEqual(s.attributes, t.attributes)
+                self.assertEqual(len(s), len(t))
 
 
 if __name__ == '__main__':

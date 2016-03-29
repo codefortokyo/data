@@ -16,7 +16,7 @@ def mainFunc(argparams=None, slproc=None, aggrparams=None, postproc=None):
     parser.add_argument('input', nargs='+',
                         help='path to shape file or zip file, URL to zip file')
     parser.add_argument('-e', '--encode', action='store', dest='encode',
-                        help='encoding (default: utf-8)', default='utf-8')
+                        help='outencoding (default: utf-8)', default='utf-8')
     parser.add_argument('-o', '--output', action='store', dest='out',
                         help='output file name (default: stdout)')
     parser.add_argument('-a', '--aggregate', action='store_true', dest='aggr',

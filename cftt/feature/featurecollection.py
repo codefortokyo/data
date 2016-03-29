@@ -27,7 +27,7 @@ class FeatureCollection(collections.MutableSequence, base.BaseAttribute):
         for x in args:
             if isinstance(x, FeatureCollection):
                 self._features += x._features
-                self.attr(x._attributes)
+                self.attr(x.attributes)
             elif util.is_map(x):
                 self.attr({
                     k: v for k, v in x.items()
@@ -121,7 +121,7 @@ class FeatureCollection(collections.MutableSequence, base.BaseAttribute):
         return self._features.insert(i, Feature(x))
 
     def __iadd__(self, other):
-        self.attr(other.attribute_items())
+        self.attr(other.attributes)
         self._features += other._features
         return self
 

@@ -51,12 +51,12 @@ class Feature(base.BaseAttribute, base.BaseProperty):
         if encoding is not None:
             return dict({'type': 'Feature',
                          'geometry': mapping(self._geometry),
-                         'properties': util.rec_encode(self._properties,
-                                                       encoding=encoding)},
-                        **util.rec_encode(self._attributes, encoding=encoding))
+                         'properties': self._properties.dump(encoding=encoding)
+                         }, **self._attributes.dump(encoding=encoding))
         return dict({u'type': u'Feature',
                      u'geometry': util.rec_decode(mapping(self._geometry)),
-                     u'properties': self._properties}, **self._attributes)
+                     u'properties': self._properties.dump()},
+                    **self._attributes.dump())
 
     @property
     def geometry(self):

@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import os
 import getpass
+import json
 
 from shp2geojson import mainFunc
 
 
 def _pr(p):
-    fm = {
-        "N03_001": "都道府県名",
-        "N03_002": "支庁・振興局名",
-        "N03_003": "郡・政令都市名",
-        "N03_004": "市区町村名",
-        "N03_007": "行政区域コード"
-    }
+    fm = {}
+    with open(os.path.join(os.path.dirname(__file__),
+                           'mlitfield.json')) as f:
+        fm = json.loads(f.read())
     for k in p:
         if k not in fm:
             fm[k] = k
@@ -63,6 +62,6 @@ def _postproc(f):
 
 if __name__ == '__main__':
     mainFunc(argparams=_argparams,
-             slparams=_slparams,
+             slproc=_slproc,
              aggrparams=_aggrparams,
              postproc=_postproc)

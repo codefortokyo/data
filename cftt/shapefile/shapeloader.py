@@ -21,9 +21,22 @@ from .. common.reopenabletempfile import ReopenableTempFile
 
 
 class ShapeLoader(collections.Callable, base.BaseAttribute):
-    def __init__(self, **kwargs):
+    def __init__(self, encoding=None, **kwargs):
         super(ShapeLoader, self).__init__()
         self.attr(kwargs)
+        self._encoding = encoding
+
+    @property
+    def encoding(self):
+        return self._encoding
+
+    @encoding.setter
+    def encoding(self, x):
+        self._encoding = x
+
+    @encoding.deleter
+    def encoding(self):
+        self._encoding = None
 
     def __call__(self, x=None):
         nonself = ShapeLoader(**self._attributes)
@@ -119,6 +132,10 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
         :param shp: string
         """
         with fiona.drivers():
-            with fiona.open(shp) as source:
+            if self._encoding is None:
+                with fiona.open(shp) as source:
+                    self.attr('shp-name', shp)
+                    return self._load_from_fiona(source)
+            with fiona.open(shp, encoding=self._encoding) as source:
                 self.attr('shp-name', shp)
                 return self._load_from_fiona(source)

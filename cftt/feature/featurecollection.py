@@ -42,11 +42,12 @@ class FeatureCollection(collections.MutableSequence, base.BaseAttribute):
             return dict({
                 'type': 'FeatureCollection',
                 'features': [f.dump(encoding=encoding) for f in self._features]
-            }, **util.rec_encode(self._attributes, encoding=encoding))
+            }, **util.rec_encode(self._attributes.dump(encoding=encoding),
+                                 encoding=encoding))
         return dict({
             u'type': u'FeatureCollection',
             u'features': [f.dump() for f in self._features]
-        }, **util.rec_decode(self._attributes))
+        }, **util.rec_decode(self._attributes.dump()))
 
     def filter(self, f):
         """Return generator of features filtered by `f`
@@ -72,7 +73,7 @@ class FeatureCollection(collections.MutableSequence, base.BaseAttribute):
                   geom=lambda k, fl, i: cascaded_union(
                                         map(lambda x: x.geometry, fl)),
                   sort=lambda k: k, reverse=False,
-                  cattr=lambda s: s.attribute_items()):
+                  cattr=lambda s: s._attributes):
         """Return another FeatureCollection whose features are mereged
         according to the result of the keys function. property and attribute
         are used when features are reduced.

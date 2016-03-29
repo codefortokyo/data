@@ -15,7 +15,7 @@ from .. common import base
 class Feature(base.BaseAttribute, base.BaseProperty):
     """Class for single feature. Handle `geometry`, `properties` and `attributes`
     """
-    def __init__(self, data):
+    def __init__(self, data=None):
         """Construct a feature from data
 
         :param data: a map with `geometry` and `properties` or a Feature
@@ -23,20 +23,24 @@ class Feature(base.BaseAttribute, base.BaseProperty):
         super(Feature, self).__init__()
         self.load(data)
 
-    def load(self, data):
+    def load(self, data=None):
         """Construct a feature from the data
 
         :param data: a map with `geometry` and `properties` or a Feature
         """
-        if isinstance(data, Feature):
+        if data is None:
+            self.geometry = None
+            self.properties = {}
+            self.attributes = {}
+        elif isinstance(data, Feature):
             self.geometry = data.geometry
             self.clear_properties()
-            self.property(data.property_items())
+            self.properties = data.properties
             self.clear_attributes()
-            self.attr(data.attribute_items())
+            self.attributes = data.attributes
         else:
             self.geometry = data['geometry']
-            self.property(data['properties'])
+            self.properties = data['properties']
             self.attributes = {
                 k: v for k, v in data.items()
                 if k not in set(('geometry', 'properties', 'type'))
@@ -50,13 +54,16 @@ class Feature(base.BaseAttribute, base.BaseProperty):
         """
         if encoding is not None:
             return dict({'type': 'Feature',
-                         'geometry': mapping(self._geometry),
-                         'properties': util.rec_encode(self._properties,
-                                                       encoding=encoding)},
-                        **util.rec_encode(self._attributes, encoding=encoding))
+                         'geometry': None if self._geometry is None else
+                         mapping(self._geometry),
+                         'properties': self._properties.dump(encoding=encoding)
+                         }, **self._attributes.dump(encoding=encoding))
         return dict({u'type': u'Feature',
-                     u'geometry': util.rec_decode(mapping(self._geometry)),
-                     u'properties': self._properties}, **self._attributes)
+                     u'geometry': util.rec_decode(
+                        None if self._geometry is None else
+                        mapping(self._geometry)),
+                     u'properties': self._properties.dump()},
+                    **self._attributes.dump())
 
     @property
     def geometry(self):
@@ -70,7 +77,9 @@ class Feature(base.BaseAttribute, base.BaseProperty):
 
         :param x: shape or a Map compatible with shape.
         """
-        if isinstance(x, BaseGeometry):
+        if x is None:
+            self._geometry = None
+        elif isinstance(x, BaseGeometry):
             self._geometry = x
         elif util.is_map(x):
             self._geometry = shape(x)

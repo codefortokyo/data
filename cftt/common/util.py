@@ -108,7 +108,8 @@ def safe_encode(x, encoding='utf-8'):
 
 
 def safe_decode(x, encoding=None):
-    """Return decoded string if x is a str, x otherwise.
+    """Return decoded string if x is a str, x otherwise. If `encoding` is None
+    this function try to find appropriate encoding.
 
     :param x: object
     """
@@ -127,6 +128,20 @@ def safe_decode(x, encoding=None):
                 except:
                     pass
     return x
+
+
+def reinterpret_decode(x):
+    """Return unicode string. if `x` is a sequence of ENCODED unicode
+    character, this function converts `x` to str, then find appropriate
+    encoding and encode with it.
+
+    :param x: unicode
+    """
+    if isinstance(x, unicode):
+        seq = map(ord, x)
+        if all((xx < 256 for xx in x)):
+            return x
+        return safe_decode(''.join(map(chr, seq)))
 
 
 def cons_array(data, c, default_array=list):

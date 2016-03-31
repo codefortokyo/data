@@ -139,9 +139,9 @@ def reinterpret_decode(x):
     """
     if isinstance(x, unicode):
         seq = map(ord, x)
-        if all((xx < 256 for xx in x)):
-            return x
-        return safe_decode(''.join(map(chr, seq)))
+        if all((xx < 256 for xx in seq)):
+            return safe_decode(''.join(map(chr, seq)))
+    return x
 
 
 def cons_array(data, c, default_array=list):

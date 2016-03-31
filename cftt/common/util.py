@@ -107,13 +107,25 @@ def safe_encode(x, encoding='utf-8'):
     return x
 
 
-def safe_decode(x, encoding='utf-8'):
+def safe_decode(x, encoding=None):
     """Return decoded string if x is a str, x otherwise.
 
     :param x: object
     """
     if isinstance(x, str):
-        return x.decode(encoding)
+        if encoding is not None:
+            return x.decode(encoding)
+        else:
+            for enc in ('utf-8', 'cp932', 'euc-jp', 'utf-7', 'shift-jis',
+                        'shift-jisx0213', 'shift-jis-2004', 'utf-16',
+                        'utf-16-be', 'utf-16-le', 'iso-2022-jp',
+                        'euc-jisx0213', 'euc-jis-2004', 'iso-2022-jp-1',
+                        'iso-2022-jp-2', 'iso-2022-jp-3', 'iso-2022-jp-ext',
+                        'iso-2022-jp-2004'):
+                try:
+                    return x.decode(enc)
+                except:
+                    pass
     return x
 
 

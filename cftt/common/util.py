@@ -141,7 +141,7 @@ def reinterpret_decode(x):
         seq = map(ord, x)
         if all((xx < 256 for xx in seq)):
             return safe_decode(''.join(map(chr, seq)))
-        return x
+    return x
 
 
 def cons_array(data, c, default_array=list):

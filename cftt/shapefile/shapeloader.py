@@ -89,6 +89,10 @@ class ShapeLoader(collections.Callable, base.BaseAttribute):
                 a[k] = v
         a['features'] = []
         for s in f:
+
+            props = json.loads(json.dumps(s['properties']))
+            print json.dumps(s['properties'])
+            print props
             a['features'].append(Feature(s))
         return FeatureCollection(a)
 

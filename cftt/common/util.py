@@ -205,30 +205,34 @@ def rec_apply(f, x, condition=const(True), is_map=is_map,
 
 
 def rec_decode(x, encoding='utf-8'):
-    """xに対して再帰的にx.decode(encoding)を掛ける
+    """Return the same structured data as `x` but each element is decoded with
+    `encoding`.
 
-    :param x: 任意のオブジェクト
-    :param encoding: エンコーディング。デフォルトはutf-8
+    :param x: object
+    :param encoding: string which specifies encoding (default: utf-8)
     """
     return rec_apply(lambda y: y.decode(encoding), x,
                      condition=lambda y: isinstance(y, str))
 
 
 def rec_encode(x, encoding='utf-8'):
-    """xに対して再帰的にx.encode(encoding)を掛ける
+    """Return the same structured data as `x` but each element is encoded with
+    `encoding`.
 
-    :param x: 任意のオブジェクト
-    :param encoding: エンコーディング。デフォルトはutf-8
+    :param x: object
+    :param encoding: string which specifies encoding (default: utf-8)
     """
     return rec_apply(lambda y: y.encode(encoding), x,
                      condition=lambda y: isinstance(y, unicode))
 
 
 def rec_str2dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
-    """xに対して再帰的にdatetime.strptime(x, timeFormat)を掛ける
+    """Return the same structured data as `x` but each string which matches the
+    `timeFormat` is casted to datetime object.
 
-    :param x: 任意のオブジェクト
-    :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
+    :param x: object
+    :param timeFormat: string which specifies time format.
+    (default: '%Y/%m/%d %H:%M:%S')
     """
     def f(y):
         try:
@@ -239,10 +243,12 @@ def rec_str2dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
 
 
 def rec_dt2str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
-    """xに対して再帰的にx.strftime(timeFormat)を掛ける
+    """Return the same structured data as `x` but each datetime object is
+    stringified with `timeFormat`.
 
     :param x: 任意のオブジェクトls
-    :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
+    :param timeFormat: string which specifies time format.
+    (default: '%Y/%m/%d %H:%M:%S')
     """
     return rec_apply(lambda y: y.strftime(timeFormat), x,
                      condition=lambda y: isinstance(y, datetime),

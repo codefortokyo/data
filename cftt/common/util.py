@@ -107,14 +107,41 @@ def safe_encode(x, encoding='utf-8'):
     return x
 
 
-def safe_decode(x, encoding='utf-8'):
-    """Return decoded string if x is a str, x otherwise.
+def safe_decode(x, encoding=None):
+    """Return decoded string if x is a str, x otherwise. If `encoding` is None
+    this function try to find appropriate encoding.
 
     :param x: object
     """
     if isinstance(x, str):
-        return x.decode(encoding)
+        if encoding is not None:
+            return x.decode(encoding)
+        else:
+            for enc in ('utf-8', 'cp932', 'euc-jp', 'utf-7', 'shift-jis',
+                        'shift-jisx0213', 'shift-jis-2004', 'utf-16',
+                        'utf-16-be', 'utf-16-le', 'iso-2022-jp',
+                        'euc-jisx0213', 'euc-jis-2004', 'iso-2022-jp-1',
+                        'iso-2022-jp-2', 'iso-2022-jp-3', 'iso-2022-jp-ext',
+                        'iso-2022-jp-2004'):
+                try:
+                    return x.decode(enc)
+                except:
+                    pass
     return x
+
+
+def reinterpret_decode(x):
+    """Return unicode string. if `x` is a sequence of ENCODED unicode
+    character, this function converts `x` to str, then find appropriate
+    encoding and encode with it.
+
+    :param x: unicode
+    """
+    if isinstance(x, unicode):
+        seq = map(ord, x)
+        if all((xx < 256 for xx in x)):
+            return x
+        return safe_decode(''.join(map(chr, seq)))
 
 
 def cons_array(data, c, default_array=list):
@@ -205,30 +232,34 @@ def rec_apply(f, x, condition=const(True), is_map=is_map,
 
 
 def rec_decode(x, encoding='utf-8'):
-    """xに対して再帰的にx.decode(encoding)を掛ける
+    """Return the same structured data as `x` but each element is decoded with
+    `encoding`.
 
-    :param x: 任意のオブジェクト
-    :param encoding: エンコーディング。デフォルトはutf-8
+    :param x: object
+    :param encoding: string which specifies encoding (default: utf-8)
     """
     return rec_apply(lambda y: y.decode(encoding), x,
                      condition=lambda y: isinstance(y, str))
 
 
 def rec_encode(x, encoding='utf-8'):
-    """xに対して再帰的にx.encode(encoding)を掛ける
+    """Return the same structured data as `x` but each element is encoded with
+    `encoding`.
 
-    :param x: 任意のオブジェクト
-    :param encoding: エンコーディング。デフォルトはutf-8
+    :param x: object
+    :param encoding: string which specifies encoding (default: utf-8)
     """
     return rec_apply(lambda y: y.encode(encoding), x,
                      condition=lambda y: isinstance(y, unicode))
 
 
 def rec_str2dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
-    """xに対して再帰的にdatetime.strptime(x, timeFormat)を掛ける
+    """Return the same structured data as `x` but each string which matches the
+    `timeFormat` is casted to datetime object.
 
-    :param x: 任意のオブジェクト
-    :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
+    :param x: object
+    :param timeFormat: string which specifies time format.
+    (default: '%Y/%m/%d %H:%M:%S')
     """
     def f(y):
         try:
@@ -239,10 +270,12 @@ def rec_str2dt(x, timeFormat='%Y/%m/%d %H:%M:%S'):
 
 
 def rec_dt2str(x, timeFormat='%Y/%m/%d %H:%M:%S'):
-    """xに対して再帰的にx.strftime(timeFormat)を掛ける
+    """Return the same structured data as `x` but each datetime object is
+    stringified with `timeFormat`.
 
     :param x: 任意のオブジェクトls
-    :param timeFormat: フォーマット。デフォルトは'%Y/%m/%d %H:%M:%S'
+    :param timeFormat: string which specifies time format.
+    (default: '%Y/%m/%d %H:%M:%S')
     """
     return rec_apply(lambda y: y.strftime(timeFormat), x,
                      condition=lambda y: isinstance(y, datetime),

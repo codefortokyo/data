@@ -75,7 +75,7 @@ class GeoJSONLoader(collections.Callable, base.BaseAttribute):
         :param x: file path
         """
         with open(x, 'r') as f:
-            return self._load_from_string(f.read())
+            return self._load_from_string(f.read()).attr('file-name', x)
 
     def _load_from_url(self, x):
         """Load from directory. Return FeatureCollection including all the
@@ -99,12 +99,19 @@ class GeoJSONLoader(collections.Callable, base.BaseAttribute):
         :param x: string
         """
         res = FeatureCollection()
+        files = []
         for f in os.listdir(x):
             try:
                 res += self(os.path.join(x, f))
+                if res.attr('file-name') is not None:
+                    files.append(res.attr('file-name'))
+                    res.attr('file-name', None)
+                if res.attr('zip-name') is not None:
+                    files.append(res.attr('zip-name'))
+                    res.attr('zip-name', None)
             except:
                 pass
-        res.attr('root-directory', x)
+        res.attr('root-directory', x).attr('files', files)
         return res
 
     def _load_from_zip_file(self, x):

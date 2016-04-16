@@ -112,7 +112,7 @@ class GeoJSONLoader(collections.Callable, base.BaseAttribute):
             except:
                 pass
         res.attr('root-directory', x).attr('files', files)
-        return res
+        return resl
 
     def _load_from_zip_file(self, x):
         """Load from zip file. Return FeatureCollection. Try to read files in

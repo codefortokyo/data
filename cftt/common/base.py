@@ -8,10 +8,18 @@ import util
 
 
 class _DecodedDict(collections.MutableMapping):
+    """DecodedDict is an child class of collections.MutableMapping.
+    Each element is decoded to unicode if possible.
+    """
     def __init__(self, *arg, **kwargs):
         super(_DecodedDict, self).__init__()
         self._elements = dict()
         self(dict(*arg, **kwargs))
+
+    def _get(self, single_key):
+        if single_key in self._elements:
+            return copy.deepcopy(self._elements[single_key])
+        return None
 
     def __getitem__(self, key):
         if util.is_map(key):
@@ -30,9 +38,7 @@ class _DecodedDict(collections.MutableMapping):
             k = util.safe_decode(key)
         else:
             k = unicode(key)
-        if k in self._elements:
-            return copy.deepcopy(self._elements[k])
-        return None
+        return self._get(k)
 
     def __setitem__(self, key, value):
         if util.is_map(key):
@@ -129,6 +135,8 @@ class _DecodedDict(collections.MutableMapping):
 
 
 class BaseAttribute(object):
+    """designed for object with attribute
+    """
     def __init__(self, *x, **kwargs):
         super(BaseAttribute, self).__init__()
         self._attributes = _DecodedDict(*x, **kwargs)
@@ -192,6 +200,8 @@ class BaseAttribute(object):
 
 
 class BaseProperty(object):
+    """designed for object with property
+    """
     def __init__(self, *x, **kwargs):
         super(BaseProperty, self).__init__()
         self._properties = _DecodedDict(*x, **kwargs)
@@ -252,3 +262,25 @@ class BaseProperty(object):
         """
         self._properties.clear()
         return self
+
+
+class Stream(BaseAttribute, collections.Iterable):
+    def __init__(self, upstream, generate, attr=None):
+        super(Stream, self).__init__(attr or {})
+        self._upstream = upstream
+        self._generate = generate
+
+    def __iter__(self):
+        return self._generate(self._upstream)
+
+
+class BasePipe(BaseAttribute):
+    def __init__(self, *args, **kwargs):
+        super(BasePipe, self).__init__(*args, **kwargs)
+
+    def __call__(self, upstream):
+        if isinstance(upstream, BaseAttribute):
+            return Stream(upstream=upstream, generate=self.__generate(),
+                          upstream.attributes)
+        return Stream(upstream=upstream,
+                      generate=self.__generate())

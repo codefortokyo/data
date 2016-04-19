@@ -5,8 +5,14 @@ import json
 from datetime import datetime
 
 from .. common import util
+from .. common import base
 from .. feature.featurecollection import FeatureCollection
 from geojsonloader import GeoJSONLoader
+
+
+def Manipulator(base.BaseAttribute):
+    def __init__(self, *args, **kwargs):
+        super(Manipulator, self).__init__(*args, **kwargs)
 
 
 def mainFunc(argproc=None, glproc=None, aggrparams=None, fcpostproc=None,

@@ -271,16 +271,116 @@ class Stream(BaseAttribute, collections.Iterable):
         self._generate = generate
 
     def __iter__(self):
-        return self._generate(self._upstream)
+        return self._generate(self, self._upstream)
 
 
-class BasePipe(BaseAttribute):
-    def __init__(self, *args, **kwargs):
-        super(BasePipe, self).__init__(*args, **kwargs)
+class BasePipe(object):
+    __default_event_handler = {
+        'initialize': None,
+        'finalize': None,
+        'iterate': None,
+        'error': lambda s, e: util._raise(e)
+    }
+
+    @classmethod
+    def set_default_event_handler(cls, event_name, event_handler):
+        if event_name in cls.__default_event_handler:
+            cls.__default_event_handler[event_name] = event_handler
+
+    def __init__(self):
+        super(BasePipe, self).__init__()
+        self.__event_handler = {}
 
     def __call__(self, upstream):
         if isinstance(upstream, BaseAttribute):
             return Stream(upstream=upstream, generate=self.__generate(),
-                          upstream.attributes)
+                          attr=upstream.attributes)
         return Stream(upstream=upstream,
                       generate=self.__generate())
+
+    def __get_event_handler(self, event_name):
+        if event_name in self.__event_handler:
+            return self.__event_handler[event_name]
+        return self.__class__.__default_event_handler[event_name]
+
+    def on(self, event_name, event_handler):
+        if event_name in self.__class__.__default_event_handler:
+            if event_handler is None:
+                del self.__event_handler[event_name]
+            else:
+                self.__event_handler[event_name] = event_handler
+
+    def _initialize(self):
+        """default behavior. should be overwritten.
+        """
+        return lambda s, u: u
+
+    def _finalize(self):
+        """default behavior. should be overwritten.
+        """
+        return lambda s: s
+
+    def _iterate(self):
+        raise Exception('_iterate not implemented')
+        # return lambda s, x: x
+
+    def __initialize(self):
+        eh = self.__get_event_handler('initialize')
+        if eh is None:
+            return self._initialize()
+
+        def f(stream, upstream):
+            ret = self._initialize()(stream, upstream)
+            eh(stream, ret)
+            return ret
+        return f
+
+    def __finalize(self):
+        eh = self.__get_event_handler('finalize')
+        if eh is None:
+            return self._finalize()
+
+        def f(stream, upstream):
+            ret = self._finalize()(stream)
+            eh(stream, ret)
+            return ret
+        return f
+
+    def __iterate(self):
+        return self._iterate()
+
+    def __generate(self):
+        initialize = self.__initialize()
+        finalize = self.__finalize()
+        iterate = self.__iterate()
+        error = self.__get_event_handler('error')
+        if self.__get_event_handler('iterate') is not None:
+            on_iterate = self.__get_event_handler('iterate')
+
+            def f(stream, upstream):
+                try:
+                    for x in initialize(stream, upstream):
+                        y = iterate(stream, x)
+                        yield y
+                        on_iterate(stream, y)
+                    finalize(stream, upstream)
+                except StopIteration:
+                    raise StopIteration
+                except Exception as e:
+                    error(stream, e)
+                finally:
+                    raise StopIteration
+            return f
+        else:
+            def f(stream, upstream):
+                try:
+                    for x in initialize(stream, upstream):
+                        yield iterate(stream, x)
+                    finalize(stream, upstream)
+                except StopIteration:
+                    raise StopIteration
+                except Exception as e:
+                    error(stream, e)
+                finally:
+                    raise StopIteration
+            return f

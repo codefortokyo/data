@@ -361,8 +361,9 @@ class BasePipe(object):
                 try:
                     for x in initialize(stream, upstream):
                         y = iterate(stream, x)
-                        yield y
-                        on_iterate(stream, y)
+                        if y is not None:
+                            yield y
+                            on_iterate(stream, y)
                     finalize(stream, upstream)
                 except StopIteration:
                     raise StopIteration
@@ -375,7 +376,9 @@ class BasePipe(object):
             def f(stream, upstream):
                 try:
                     for x in initialize(stream, upstream):
-                        yield iterate(stream, x)
+                        y = iterate(stream, x)
+                        if y is not None:
+                            yield y
                     finalize(stream, upstream)
                 except StopIteration:
                     raise StopIteration

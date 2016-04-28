@@ -413,5 +413,11 @@ class BasePropertyTester(unittest.TestCase):
                          dict())
 
 
+class BasePipeTester(unittest.TestCase):
+
+    def setup(self):
+        pass
+
+
 if __name__ == '__main__':
     unittest.main()

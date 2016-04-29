@@ -10,7 +10,7 @@ from shp2geojson import mainFunc
 def _pr(p):
     fm = {}
     with open(os.path.join(os.path.dirname(__file__),
-                           'mlitfield.json')) as f:
+                           'mlitdict/mlitfield.json')) as f:
         fm = json.loads(f.read())
     for k in p:
         if k not in fm:

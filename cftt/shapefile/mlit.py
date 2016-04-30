@@ -6,12 +6,20 @@ import json
 
 from shp2geojson import mainFunc
 
+__field = None
+
+with open(os.path.join(os.path.dirname(__file__), 'mlitdict',
+                       'mlitfield.json')) as f:
+    __field = json.loads(f)
+
+__code = None
+
+with open(os.path.join(os.path.dirname(__file__), 'mlitdict',
+                       'mlitcode.json')) as f:
+    __code = json.loads(f)
+
 
 def _pr(p):
-    fm = {}
-    with open(os.path.join(os.path.dirname(__file__),
-                           'mlitdict/mlitfield.json')) as f:
-        fm = json.loads(f.read())
     for k in p:
         if k not in fm:
             fm[k] = k

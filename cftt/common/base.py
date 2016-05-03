@@ -321,8 +321,9 @@ class BasePipe(object):
         return lambda s: s
 
     def _iterate(self):
-        raise Exception('_iterate not implemented')
-        # return lambda s, x: x
+        """default behavior. should be overwritten.
+        """
+        return lambda s, x: x
 
     def __initialize(self):
         eh = self.__get_event_handler('initialize')
